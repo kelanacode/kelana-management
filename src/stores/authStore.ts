@@ -1,7 +1,20 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { UserAccount, AuthSession, LoginAttempt, UserRole } from '../types/auth';
-import { hashPassword, generateToken, generateSessionId, createMockJWT } from '../utils/crypto';
+import { Member } from '../types';
+import { supabase } from '../lib/supabase';
+import { PROFILE_COLUMNS } from '../lib/dbSchema';
+import { fromRow, toRow, startSync, stopSync } from '../lib/sync';
+import { useAppStore } from './appStore';
+
+export interface InvitationInfo {
+  email: string;
+  name: string;
+  nik: string;
+  division: string;
+  position: string;
+  role: UserRole;
+}
 
 interface AuthStore {
   users: UserAccount[];
@@ -16,6 +29,7 @@ interface AuthStore {
   } | null;
 
   // Actions
+  initAuth: () => Promise<void>;
   login: (identifier: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string; require2FA?: boolean }>;
   verify2FA: (code: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
@@ -27,216 +41,230 @@ interface AuthStore {
     position: string;
     role: UserRole;
   }) => Promise<{ success: boolean; inviteLink: string; token: string; error?: string }>;
+  getInvitation: (token: string) => Promise<InvitationInfo | null>;
   activateAccountWithPassword: (token: string, newPassword: string, enable2FA?: boolean) => Promise<{ success: boolean; error?: string }>;
   clearInvitationAlert: () => void;
   checkSessionValid: () => boolean;
   updateUserProfile: (userId: string, data: Partial<UserAccount>) => Promise<{ success: boolean; error?: string }>;
+  refreshUsers: () => Promise<void>;
 }
 
-// Initial default accounts
-// Password for admin: Admin123!
-// Password for andi: Kelana2026!
-const DEFAULT_USERS: UserAccount[] = [
-  {
-    id: 'user-admin',
-    name: 'Admin Kantor Kelana',
-    email: 'admin@ruangkelana.id',
-    username: 'admin',
-    nik: 'KEL-001',
-    division: 'Operasional & HR',
-    position: 'HR & Office Administrator',
-    role: 'Admin',
-    status: 'Active',
-    avatar: 'AD',
-    color: '#7c3aed',
-    passwordHash: '3eb3fe66b31e3b4d10fa70b5cad49c7112294af6ae4e476a1c405155d45aa121', // Admin123!
-    twoFactorEnabled: false,
-    createdAt: new Date().toISOString(),
-  },
-];
+const profileToUser = (row: Record<string, any>): UserAccount =>
+  ({ passwordHash: '', ...fromRow(row, PROFILE_COLUMNS) }) as unknown as UserAccount;
+
+const toSessionUser = (u: UserAccount): AuthSession['user'] => {
+  const { passwordHash: _p, verificationToken: _v, tokenExpiresAt: _t, twoFactorSecret: _s, status: _st, lastLogin: _l, createdAt: _c, invitedBy: _i, ...rest } = u;
+  return rest;
+};
+
+const initials = (name: string) =>
+  name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase() || 'KR';
+
+const toMember = (u: UserAccount): Member => ({
+  id: u.id,
+  name: u.name,
+  email: u.email,
+  role: u.position || u.role,
+  avatar: u.avatar,
+  color: u.color,
+  online: u.workStatus !== 'Sedang Cuti' && u.workStatus !== 'Luar Kantor',
+});
+
+// Daftar anggota tim & user aktif di appStore mengikuti data profil.
+const syncAppMembers = (users: UserAccount[], session: AuthSession | null) => {
+  const active = users.filter((u) => u.status === 'Active');
+  const me = session ? active.find((u) => u.id === session.user.id) : undefined;
+  useAppStore.setState((s) => ({
+    members: active.map(toMember),
+    settings: { ...s.settings, currentUser: me ? toMember(me) : (undefined as unknown as Member) },
+  }));
+};
+
+const recordAttempt = (identifier: string, success: boolean, reason?: string): LoginAttempt => ({
+  id: Date.now().toString(),
+  identifier,
+  ip: 'client',
+  timestamp: new Date().toISOString(),
+  success,
+  reason,
+});
+
+// 2FA di aplikasi ini masih berupa verifikasi kode 6 digit di sisi klien.
+let twoFactorPassedFor: string | null = null;
 
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
-      users: DEFAULT_USERS,
+      users: [],
       session: null,
       loginAttempts: [],
       pendingInvitationEmail: null,
 
-      login: async (identifier, password, rememberMe = false) => {
-        const { users, loginAttempts } = get();
+      refreshUsers: async () => {
+        const [{ data: profiles, error }, { data: invites }] = await Promise.all([
+          supabase.from('profiles').select('*').order('created_at'),
+          supabase.from('invitations').select('*').is('used_at', null).order('created_at'),
+        ]);
+        if (error) {
+          console.error('[auth] gagal memuat profil:', error);
+          return;
+        }
+        const pending: UserAccount[] = (invites ?? []).map((inv) => ({
+          id: `invite-${inv.token}`,
+          name: inv.name,
+          email: inv.email,
+          username: inv.username ?? inv.email.split('@')[0],
+          nik: inv.nik ?? '',
+          division: inv.division ?? '',
+          position: inv.position ?? '',
+          role: inv.role,
+          status: 'Pending',
+          avatar: inv.avatar ?? initials(inv.name),
+          color: inv.color ?? '#7c3aed',
+          passwordHash: '',
+          verificationToken: inv.token,
+          tokenExpiresAt: inv.expires_at,
+          createdAt: inv.created_at,
+          invitedBy: inv.invited_by ?? undefined,
+        }));
+        const users = [...(profiles ?? []).map(profileToUser), ...pending];
 
-        // 4. Validasi Awal (Input Validation)
+        const { session } = get();
+        const me = session ? users.find((u) => u.id === session.user.id) : undefined;
+        const nextSession = session && me ? { ...session, user: toSessionUser(me) } : session;
+        set({ users, session: nextSession });
+        syncAppMembers(users, nextSession);
+      },
+
+      // Dipanggil sekali saat aplikasi dibuka: cocokkan sesi lokal dengan sesi Supabase.
+      initAuth: async () => {
+        const { data } = await supabase.auth.getSession();
+        const sbSession = data.session;
+        if (!sbSession) {
+          set({ session: null });
+          await stopSync();
+          return;
+        }
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', sbSession.user.id).maybeSingle();
+        if (!profile || profile.status !== 'Active') {
+          await supabase.auth.signOut();
+          set({ session: null });
+          return;
+        }
+        const user = profileToUser(profile);
+        const prev = get().session;
+        set({
+          session: {
+            token: sbSession.access_token,
+            sessionId: sbSession.user.id,
+            expiresAt: prev?.expiresAt ?? new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
+            rememberMe: prev?.rememberMe ?? false,
+            user: toSessionUser(user),
+          },
+        });
+        await get().refreshUsers();
+        void startSync();
+      },
+
+      login: async (identifier, password, rememberMe = false) => {
+        const { loginAttempts } = get();
+        const log = (success: boolean, reason?: string) =>
+          set({ loginAttempts: [recordAttempt(identifier, success, reason), ...loginAttempts.slice(0, 49)] });
+
         const cleanId = identifier.trim().toLowerCase();
         if (!cleanId || !password) {
-          const attempt: LoginAttempt = {
-            id: Date.now().toString(),
-            identifier,
-            ip: '127.0.0.1 (Client)',
-            timestamp: new Date().toISOString(),
-            success: false,
-            reason: 'Field email/username atau password kosong',
-          };
-          set({ loginAttempts: [attempt, ...loginAttempts.slice(0, 49)] });
+          log(false, 'Field email/username atau password kosong');
           return { success: false, error: 'Email/Username dan Password wajib diisi!' };
         }
 
-        // 5. Pengecekan Kredensial ke Database
-        const user = users.find(
-          (u) =>
-            u.email.toLowerCase() === cleanId ||
-            u.username.toLowerCase() === cleanId ||
-            u.nik.toLowerCase() === cleanId
-        );
-
-        if (!user) {
-          const attempt: LoginAttempt = {
-            id: Date.now().toString(),
-            identifier,
-            ip: '127.0.0.1 (Client)',
-            timestamp: new Date().toISOString(),
-            success: false,
-            reason: 'Akun tidak ditemukan di database kantor',
-          };
-          set({ loginAttempts: [attempt, ...loginAttempts.slice(0, 49)] });
-          return { success: false, error: 'Kredensial tidak valid: Akun tidak ditemukan.' };
+        // Username / NIK -> email
+        let email = cleanId;
+        if (!cleanId.includes('@')) {
+          const { data, error } = await supabase.rpc('resolve_login_email', { identifier: cleanId });
+          if (error) return { success: false, error: 'Tidak dapat menghubungi server. Coba lagi.' };
+          if (!data) {
+            log(false, 'Akun tidak ditemukan');
+            return { success: false, error: 'Kredensial tidak valid: Akun tidak ditemukan.' };
+          }
+          email = data as string;
         }
 
-        if (user.status === 'Pending') {
-          return {
-            success: false,
-            error: 'Akun ini masih berstatus "Pending". Silakan cek email kantor Anda untuk aktivasi akun dan pembuatan password baru.',
-          };
+        const { data: auth, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+        if (authError || !auth.session) {
+          log(false, authError?.message ?? 'Login gagal');
+          return { success: false, error: 'Email/username atau kata sandi salah. Silakan coba kembali.' };
         }
 
-        if (user.status === 'Suspended') {
-          return {
-            success: false,
-            error: 'Akun ini sedang ditangguhkan (Suspended). Harap hubungi Admin / HRD.',
-          };
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', auth.user.id).maybeSingle();
+        if (!profile) {
+          await supabase.auth.signOut();
+          return { success: false, error: 'Profil karyawan untuk akun ini belum ada. Hubungi Admin / HRD.' };
+        }
+        if (profile.status === 'Suspended') {
+          await supabase.auth.signOut();
+          return { success: false, error: 'Akun ini sedang ditangguhkan (Suspended). Harap hubungi Admin / HRD.' };
         }
 
-        // Check password hash
-        const inputHash = await hashPassword(password);
-        if (inputHash !== user.passwordHash) {
-          const attempt: LoginAttempt = {
-            id: Date.now().toString(),
-            identifier,
-            ip: '127.0.0.1 (Client)',
-            timestamp: new Date().toISOString(),
-            success: false,
-            reason: 'Password salah (Hash mismatch)',
-          };
-          set({ loginAttempts: [attempt, ...loginAttempts.slice(0, 49)] });
-          return { success: false, error: 'Kata sandi salah. Silakan coba kembali.' };
-        }
-
-        // Check if 2FA is enabled
-        if (user.twoFactorEnabled) {
+        const user = profileToUser(profile);
+        if (user.twoFactorEnabled && twoFactorPassedFor !== user.id) {
+          twoFactorPassedFor = `pending:${user.id}`;
           return { success: true, require2FA: true };
         }
+        twoFactorPassedFor = null;
 
-        // 6b. Berhasil: Regenerasi Session ID & JWT
-        const newSessionId = generateSessionId();
-        const jwtToken = createMockJWT({
-          sub: user.id,
-          email: user.email,
-          role: user.role,
-          name: user.name,
-        });
-
-        // Expiry: 7 days if rememberMe, else 24 hours
         const durationMs = rememberMe ? 7 * 24 * 3600 * 1000 : 24 * 3600 * 1000;
-        const expiresAt = new Date(Date.now() + durationMs).toISOString();
-
-        const session: AuthSession = {
-          token: jwtToken,
-          sessionId: newSessionId,
-          expiresAt,
-          rememberMe,
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            username: user.username,
-            nik: user.nik,
-            division: user.division,
-            position: user.position,
-            role: user.role,
-            avatar: user.avatar,
-            color: user.color,
-            twoFactorEnabled: user.twoFactorEnabled,
-            photoUrl: user.photoUrl,
-            phone: user.phone,
-            altEmail: user.altEmail,
-            emergencyContactName: user.emergencyContactName,
-            emergencyContactRelation: user.emergencyContactRelation,
-            emergencyContactPhone: user.emergencyContactPhone,
-            managerName: user.managerName,
-            bio: user.bio,
-            bankName: user.bankName,
-            bankAccountNumber: user.bankAccountNumber,
-            bankAccountHolder: user.bankAccountHolder,
-            digitalSignature: user.digitalSignature,
-            signatureDate: user.signatureDate,
-            workStatus: user.workStatus,
-            statusCustomMessage: user.statusCustomMessage,
-            googleCalendarEmail: user.googleCalendarEmail,
-            calendarSyncGoogle: user.calendarSyncGoogle,
-          },
-        };
-
-        // Update last login
-        const updatedUsers = users.map((u) =>
-          u.id === user.id ? { ...u, lastLogin: new Date().toISOString() } : u
-        );
-
-        const attempt: LoginAttempt = {
-          id: Date.now().toString(),
-          identifier,
-          ip: '127.0.0.1 (Client)',
-          timestamp: new Date().toISOString(),
-          success: true,
-        };
-
         set({
-          session,
-          users: updatedUsers,
-          loginAttempts: [attempt, ...loginAttempts.slice(0, 49)],
+          session: {
+            token: auth.session.access_token,
+            sessionId: auth.user.id,
+            expiresAt: new Date(Date.now() + durationMs).toISOString(),
+            rememberMe,
+            user: toSessionUser(user),
+          },
         });
+        log(true);
 
+        await supabase.from('profiles').update({ last_login: new Date().toISOString() }).eq('id', user.id);
+        await get().refreshUsers();
+        void startSync();
         return { success: true };
       },
 
       verify2FA: async (code: string) => {
-        // Simple 2FA verification: accepts 6-digit or '123456'
-        if (code.trim().length !== 6) {
+        if (!/^\d{6}$/.test(code.trim())) {
           return { success: false, error: 'Kode OTP 2FA harus 6 digit angka.' };
+        }
+        if (twoFactorPassedFor?.startsWith('pending:')) {
+          twoFactorPassedFor = twoFactorPassedFor.slice('pending:'.length);
         }
         return { success: true };
       },
 
       logout: () => {
-        set({ session: null });
+        set({ session: null, users: [] });
+        twoFactorPassedFor = null;
+        void stopSync().then(() => supabase.auth.signOut());
       },
 
       checkSessionValid: () => {
         const { session } = get();
         if (!session) return false;
-        const now = new Date().getTime();
-        const expiry = new Date(session.expiresAt).getTime();
-        if (now > expiry) {
-          set({ session: null });
+        if (Date.now() > new Date(session.expiresAt).getTime()) {
+          get().logout();
           return false;
         }
         return true;
       },
 
       inviteEmployee: async (data) => {
-        const { users } = get();
+        const { users, session } = get();
         const cleanEmail = data.email.trim().toLowerCase();
 
-        // Check duplicate email / NIK
         if (users.some((u) => u.email.toLowerCase() === cleanEmail)) {
           return { success: false, inviteLink: '', token: '', error: 'Email kantor ini sudah terdaftar!' };
         }
@@ -244,89 +272,70 @@ export const useAuthStore = create<AuthStore>()(
           return { success: false, inviteLink: '', token: '', error: 'NIK ini sudah terdaftar!' };
         }
 
-        const token = generateToken(24);
-        // Expiry 48 hours
-        const tokenExpiresAt = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
-        const username = cleanEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
-
-        const initials = data.name
-          .split(' ')
-          .map((n) => n[0])
-          .slice(0, 2)
-          .join('')
-          .toUpperCase() || 'KR';
-
         const colors = ['#7c3aed', '#2563eb', '#059669', '#d97706', '#db2777', '#0891b2'];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        const { data: inv, error } = await supabase
+          .from('invitations')
+          .insert({
+            email: cleanEmail,
+            name: data.name.trim(),
+            username: cleanEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, ''),
+            nik: data.nik.trim(),
+            division: data.division,
+            position: data.position.trim(),
+            role: data.role,
+            avatar: initials(data.name.trim()),
+            color: colors[Math.floor(Math.random() * colors.length)],
+            invited_by: session?.user.name,
+          })
+          .select()
+          .single();
 
-        const newUser: UserAccount = {
-          id: 'user-' + Date.now(),
-          name: data.name.trim(),
-          email: cleanEmail,
-          username: username || 'user' + Date.now(),
-          nik: data.nik.trim(),
-          division: data.division,
-          position: data.position.trim(),
-          role: data.role,
-          status: 'Pending',
-          avatar: initials,
-          color: randomColor,
-          passwordHash: '',
-          verificationToken: token,
-          tokenExpiresAt,
-          twoFactorEnabled: false,
-          createdAt: new Date().toISOString(),
-        };
+        if (error || !inv) {
+          return {
+            success: false,
+            inviteLink: '',
+            token: '',
+            error: 'Gagal membuat undangan. Hanya Admin, CEO, atau HR yang dapat mengundang karyawan.',
+          };
+        }
 
-        const inviteLink = `${window.location.origin}/activate?token=${token}`;
-
-        set((state) => ({
-          users: [...state.users, newUser],
+        const inviteLink = `${window.location.origin}/activate?token=${inv.token}`;
+        set({
           pendingInvitationEmail: {
             email: cleanEmail,
             name: data.name.trim(),
-            token,
-            expiresAt: tokenExpiresAt,
+            token: inv.token,
+            expiresAt: inv.expires_at,
             link: inviteLink,
           },
-        }));
+        });
+        await get().refreshUsers();
+        return { success: true, inviteLink, token: inv.token };
+      },
 
-        return {
-          success: true,
-          inviteLink,
-          token,
-        };
+      getInvitation: async (token) => {
+        if (!token) return null;
+        const { data, error } = await supabase.rpc('get_invitation', { p_token: token });
+        if (error || !data || (Array.isArray(data) && data.length === 0)) return null;
+        return (Array.isArray(data) ? data[0] : data) as InvitationInfo;
       },
 
       activateAccountWithPassword: async (token, newPassword, enable2FA = false) => {
-        const { users } = get();
-        const user = users.find((u) => u.verificationToken === token);
-
-        if (!user) {
-          return { success: false, error: 'Token aktivasi tidak valid atau telah kedaluwarsa.' };
+        const invitation = await get().getInvitation(token);
+        if (!invitation) {
+          return { success: false, error: 'Token aktivasi tidak valid atau telah kedaluwarsa. Harap hubungi Admin/HRD untuk undangan baru.' };
         }
 
-        // Check expiration
-        if (user.tokenExpiresAt && new Date().getTime() > new Date(user.tokenExpiresAt).getTime()) {
-          return { success: false, error: 'Tautan aktivasi telah kedaluwarsa (lebih dari 48 jam). Harap hubungi Admin/HRD untuk undangan baru.' };
+        const { error } = await supabase.auth.signUp({
+          email: invitation.email,
+          password: newPassword,
+          options: { data: { two_factor_enabled: enable2FA } },
+        });
+        if (error) {
+          return { success: false, error: `Aktivasi gagal: ${error.message}` };
         }
-
-        const newHash = await hashPassword(newPassword);
-
-        const updatedUsers = users.map((u) =>
-          u.id === user.id
-            ? {
-                ...u,
-                status: 'Active' as const,
-                passwordHash: newHash,
-                twoFactorEnabled: enable2FA,
-                verificationToken: undefined,
-                tokenExpiresAt: undefined,
-              }
-            : u
-        );
-
-        set({ users: updatedUsers });
+        // Pengguna diminta login ulang dari halaman login.
+        await supabase.auth.signOut();
         return { success: true };
       },
 
@@ -335,63 +344,32 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       updateUserProfile: async (userId, data) => {
-        const { users, session } = get();
-        const userExists = users.some((u) => u.id === userId);
-        if (!userExists) {
+        const { users } = get();
+        const current = users.find((u) => u.id === userId);
+        if (!current) {
           return { success: false, error: 'User tidak ditemukan' };
         }
 
-        const updatedUsers = users.map((u) => {
-          if (u.id === userId) {
-            return {
-              ...u,
-              ...data,
-              // Jika nama diubah, update avatar inisial
-              avatar: data.name ? data.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : u.avatar,
-            };
-          }
-          return u;
-        });
-
-        // Update active session user juga jika user yang diedit sedang login
-        let updatedSession = session;
-        if (session && session.user.id === userId) {
-          const target = updatedUsers.find((u) => u.id === userId)!;
-          updatedSession = {
-            ...session,
-            user: {
-              ...session.user,
-              name: target.name,
-              avatar: target.avatar,
-              division: target.division,
-              position: target.position,
-              photoUrl: target.photoUrl,
-              phone: target.phone,
-              altEmail: target.altEmail,
-              emergencyContactName: target.emergencyContactName,
-              emergencyContactRelation: target.emergencyContactRelation,
-              emergencyContactPhone: target.emergencyContactPhone,
-              managerName: target.managerName,
-              bio: target.bio,
-              bankName: target.bankName,
-              bankAccountNumber: target.bankAccountNumber,
-              bankAccountHolder: target.bankAccountHolder,
-              digitalSignature: target.digitalSignature,
-              signatureDate: target.signatureDate,
-              workStatus: target.workStatus,
-              statusCustomMessage: target.statusCustomMessage,
-              googleCalendarEmail: target.googleCalendarEmail,
-              calendarSyncGoogle: target.calendarSyncGoogle,
-            },
-          };
+        const merged: UserAccount = {
+          ...current,
+          ...data,
+          avatar: data.name ? initials(data.name) : current.avatar,
+        };
+        const { error } = await supabase
+          .from('profiles')
+          .update(toRow(merged, PROFILE_COLUMNS, false))
+          .eq('id', userId);
+        if (error) {
+          return { success: false, error: `Gagal menyimpan profil: ${error.message}` };
         }
 
-        set({ users: updatedUsers, session: updatedSession });
+        await get().refreshUsers();
         return { success: true };
       },
     }),
     {
-      name: 'ruang-kelana-auth-clean',
+      name: 'ruang-kelana-auth-supabase',
+      partialize: (state) => ({ session: state.session }),
     }
   )
 );

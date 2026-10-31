@@ -7,13 +7,16 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:generate": "node supabase/generate.mjs",
+    "db:migrate": "node supabase/migrate.mjs",
+    "db:create-admin": "node supabase/create-admin.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.0.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@supabase/supabase-js": "^2.118.0",
     "@tiptap/extension-color": "^3.32.1",
     "@tiptap/extension-font-family": "^3.32.1",
     "@tiptap/extension-highlight": "^3.32.1",
@@ -46,7 +49,9 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "autoprefixer": "^10.6.2",
+    "dotenv": "^18.0.9",
     "oxlint": "^1.89.0",
+    "pg": "^8.23.1",
     "postcss": "^8.5.32",
     "tailwindcss": "^4.3.3",
     "typescript": "~7.0.2",

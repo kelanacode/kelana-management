@@ -4,7 +4,7 @@ import {
   Compass, CheckCircle2, AlertCircle, Lock, Eye, EyeOff,
   ShieldCheck, ArrowRight, UserCheck, Key
 } from 'lucide-react';
-import { useAuthStore } from '../stores/authStore';
+import { useAuthStore, InvitationInfo } from '../stores/authStore';
 import { validatePasswordStrength } from '../utils/crypto';
 
 export const ActivateAccount: React.FC = () => {
@@ -12,7 +12,22 @@ export const ActivateAccount: React.FC = () => {
   const navigate = useNavigate();
   const token = searchParams.get('token') || '';
 
-  const { users, activateAccountWithPassword } = useAuthStore();
+  const { getInvitation, activateAccountWithPassword } = useAuthStore();
+  const [pendingUser, setPendingUser] = useState<InvitationInfo | null>(null);
+  const [checkingToken, setCheckingToken] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setCheckingToken(true);
+    getInvitation(token).then((inv) => {
+      if (cancelled) return;
+      setPendingUser(inv);
+      setCheckingToken(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [token, getInvitation]);
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -23,8 +38,6 @@ export const ActivateAccount: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // Find user by verification token
-  const pendingUser = users.find((u) => u.verificationToken === token);
 
   const strength = validatePasswordStrength(password);
 
@@ -80,7 +93,7 @@ export const ActivateAccount: React.FC = () => {
         </div>
 
         {/* If token invalid */}
-        {!pendingUser && !success && (
+        {!checkingToken && !pendingUser && !success && (
           <div className="p-6 text-center space-y-4">
             <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-600 flex items-center justify-center mx-auto">
               <AlertCircle size={24} />
