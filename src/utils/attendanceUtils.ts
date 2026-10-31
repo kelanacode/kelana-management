@@ -1,20 +1,38 @@
 // Geolocation and Geofencing utilities for Ruang Kelana Attendance
 
-// Area absensi: wilayah Cirebon (Kota & Kabupaten).
-// Titik pusat = Kota Cirebon; radius cadangan dipakai bila nama wilayah gagal didapat.
+// Wilayah yang diizinkan untuk absensi.
+// Lokasi dicocokkan dari nama wilayah hasil GPS; titik pusat & radius dipakai
+// sebagai cadangan bila nama wilayah gagal didapat.
+export const ATTENDANCE_AREAS = [
+  { name: 'Cirebon', pattern: /cirebon/i, latitude: -6.732, longitude: 108.5523, radiusMeters: 30000 },
+  { name: 'Bandung', pattern: /bandung/i, latitude: -6.9175, longitude: 107.6191, radiusMeters: 25000 },
+  { name: 'Jakarta', pattern: /jakarta/i, latitude: -6.2088, longitude: 106.8456, radiusMeters: 25000 },
+];
+
+export const ATTENDANCE_AREA_LABEL = 'Cirebon, Bandung, atau Jakarta';
+
+// Dipertahankan untuk kode lama yang memakai nama area
 export const DEFAULT_OFFICE = {
-  name: 'Wilayah Cirebon (Kota & Kabupaten)',
-  latitude: -6.732,
-  longitude: 108.5523,
-  radiusMeters: 30000,
+  name: ATTENDANCE_AREA_LABEL,
+  latitude: ATTENDANCE_AREAS[0].latitude,
+  longitude: ATTENDANCE_AREAS[0].longitude,
+  radiusMeters: ATTENDANCE_AREAS[0].radiusMeters,
 };
 
-// Lokasi dianggap sah bila alamat hasil GPS berada di Cirebon.
-// Jika alamat tidak tersedia (hanya koordinat), gunakan radius dari pusat Kota Cirebon.
-export function isWithinAttendanceArea(distanceMeters: number, address?: string): boolean {
+// Wilayah terdekat beserta jaraknya ke pusat kota
+export function nearestAttendanceArea(lat: number, lon: number) {
+  return ATTENDANCE_AREAS.map((area) => ({
+    area,
+    distance: calculateDistanceInMeters(lat, lon, area.latitude, area.longitude),
+  })).sort((x, y) => x.distance - y.distance)[0];
+}
+
+// Wilayah tempat lokasi berada, atau null bila di luar semua wilayah yang diizinkan
+export function matchAttendanceArea(lat: number, lon: number, address?: string) {
   const hasPlaceName = !!address && /[a-z]/i.test(address);
-  if (hasPlaceName) return /cirebon/i.test(address!);
-  return distanceMeters <= DEFAULT_OFFICE.radiusMeters;
+  if (hasPlaceName) return ATTENDANCE_AREAS.find((area) => area.pattern.test(address!)) ?? null;
+  const nearest = nearestAttendanceArea(lat, lon);
+  return nearest.distance <= nearest.area.radiusMeters ? nearest.area : null;
 }
 
 export const formatDistance = (meters: number) =>

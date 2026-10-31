@@ -7,10 +7,10 @@ import {
 import { useAuthStore } from '../stores/authStore';
 import { useAttendanceStore } from '../stores/attendanceStore';
 import {
-  DEFAULT_OFFICE,
-  isWithinAttendanceArea,
+  ATTENDANCE_AREA_LABEL,
+  matchAttendanceArea,
+  nearestAttendanceArea,
   formatDistance,
-  calculateDistanceInMeters,
   getServerTimestampWIB,
   checkAttendanceWindow,
   reverseGeocodeCoordinates,
@@ -104,18 +104,15 @@ export const EmployeeAttendanceTab: React.FC = () => {
         const lon = pos.coords.longitude;
         const accuracy = Math.round(pos.coords.accuracy || 0);
 
-        const distance = calculateDistanceInMeters(
-          lat,
-          lon,
-          DEFAULT_OFFICE.latitude,
-          DEFAULT_OFFICE.longitude
-        );
+        const nearest = nearestAttendanceArea(lat, lon);
         // Ambil alamat nama jalan/wilayah nyata perangkat & IP publik
         const [realAddress, networkInfo] = await Promise.all([
           reverseGeocodeCoordinates(lat, lon),
           getDeviceNetworkInfo(),
         ]);
-        const inside = isWithinAttendanceArea(distance, realAddress);
+        const matchedArea = matchAttendanceArea(lat, lon, realAddress);
+        const inside = !!matchedArea;
+        const distance = nearest.distance;
 
         setUserLocation({
           latitude: lat,
@@ -131,7 +128,7 @@ export const EmployeeAttendanceTab: React.FC = () => {
       async (err) => {
         console.warn('Geolocation permission error or unavailable:', err);
         const networkInfo = await getDeviceNetworkInfo();
-        // Tanpa GPS, lokasi tidak bisa dipastikan berada di Cirebon -> absen tidak diizinkan
+        // Tanpa GPS, lokasi tidak bisa dipastikan berada di wilayah yang diizinkan -> absen tidak diizinkan
         setUserLocation({
           latitude: 0,
           longitude: 0,
@@ -156,7 +153,7 @@ export const EmployeeAttendanceTab: React.FC = () => {
     if (!userLocation.isInsideOfficeGeofence) {
       setAlert({
         type: 'error',
-        message: `Absensi hanya dapat dilakukan di wilayah Cirebon. Lokasi terdeteksi: ${userLocation.address || 'tidak diketahui'}.`,
+        message: `Absensi hanya dapat dilakukan di wilayah ${ATTENDANCE_AREA_LABEL}. Lokasi terdeteksi: ${userLocation.address || 'tidak diketahui'}.`,
       });
       return;
     }
@@ -180,7 +177,7 @@ export const EmployeeAttendanceTab: React.FC = () => {
     if (!userLocation.isInsideOfficeGeofence) {
       setAlert({
         type: 'error',
-        message: `Absensi hanya dapat dilakukan di wilayah Cirebon. Lokasi terdeteksi: ${userLocation.address || 'tidak diketahui'}.`,
+        message: `Absensi hanya dapat dilakukan di wilayah ${ATTENDANCE_AREA_LABEL}. Lokasi terdeteksi: ${userLocation.address || 'tidak diketahui'}.`,
       });
       return;
     }
@@ -196,7 +193,7 @@ export const EmployeeAttendanceTab: React.FC = () => {
     const effectiveDate = getActiveDate();
     if (!userLocation?.isInsideOfficeGeofence) {
       setLoading(false);
-      setAlert({ type: 'error', message: 'Absensi hanya dapat dilakukan di wilayah Cirebon dengan GPS aktif.' });
+      setAlert({ type: 'error', message: `Absensi hanya dapat dilakukan di wilayah ${ATTENDANCE_AREA_LABEL} dengan GPS aktif.` });
       return;
     }
     const loc = userLocation;
@@ -410,7 +407,7 @@ export const EmployeeAttendanceTab: React.FC = () => {
                           : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
                       }`}
                     >
-                      {detectingLocation ? 'Mendeteksi...' : userLocation?.isInsideOfficeGeofence ? '✓ Dalam Wilayah Cirebon' : '⚠️ Di Luar Wilayah Cirebon'}
+                      {detectingLocation ? 'Mendeteksi...' : userLocation?.isInsideOfficeGeofence ? '✓ Dalam Wilayah Absensi' : '⚠️ Di Luar Cirebon / Bandung / Jakarta'}
                     </span>
                   </div>
                   <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -419,7 +416,7 @@ export const EmployeeAttendanceTab: React.FC = () => {
                       : userLocation?.address || 'Lokasi terdeteksi'}
                   </p>
                   <p className="text-[11px] text-gray-400 mt-0.5">
-                    IP: {userLocation?.ipAddress || '-'} • Jarak ke pusat Kota Cirebon: {userLocation?.latitude ? formatDistance(userLocation.distanceFromOfficeMeters) : '-'}
+                    IP: {userLocation?.ipAddress || '-'} • {userLocation?.latitude ? `Jarak ke pusat Kota ${nearestAttendanceArea(userLocation.latitude, userLocation.longitude).area.name}: ${formatDistance(userLocation.distanceFromOfficeMeters)}` : 'Jarak: -'}
                   </p>
                 </div>
               </div>

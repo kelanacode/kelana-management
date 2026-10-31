@@ -102,7 +102,7 @@ export const useAttendanceStore = create<AttendanceStore>()(
           };
         }
 
-        // 2. Absensi hanya dari wilayah Cirebon
+        // 2. Absensi hanya dari wilayah yang diizinkan (Cirebon, Bandung, Jakarta)
         if (!location.isInsideOfficeGeofence) {
           return {
             success: false,

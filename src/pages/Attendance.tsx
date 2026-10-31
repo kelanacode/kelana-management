@@ -8,8 +8,8 @@ export const AttendancePage: React.FC = () => {
   const { session } = useAuthStore();
   const user = session?.user;
 
-  // Hanya muncul/bisa diakses sistem HR jika mendapatkan role HR atau Admin
-  const isHRorAdmin = user?.role === 'Admin' || user?.role === 'HR';
+  // Sistem HR hanya untuk role HR, Admin, atau CEO
+  const isHRorAdmin = user?.role === 'Admin' || user?.role === 'CEO' || user?.role === 'HR';
 
   const [activeView, setActiveView] = useState<'employee' | 'hr'>('employee');
 

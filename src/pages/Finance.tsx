@@ -75,6 +75,7 @@ export const FinancePage: React.FC = () => {
   const isFinance =
     currentRole === 'Finance' ||
     currentRole === 'Admin' ||
+    currentRole === 'CEO' ||
     (currentUser?.division || '').toLowerCase().includes('finan');
 
   const [activeTab, setActiveTab] = useState<FinanceTab>('accounting');

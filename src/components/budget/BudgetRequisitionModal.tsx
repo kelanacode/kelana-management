@@ -43,12 +43,14 @@ export const BudgetRequisitionModal: React.FC<{
   const isFinance =
     currentRole === 'Finance' ||
     currentRole === 'Admin' ||
+    currentRole === 'CEO' ||
     userDivision.toLowerCase().includes('finan') ||
     userDivision.toLowerCase().includes('keuangan');
 
   const isHR =
     currentRole === 'HR' ||
     currentRole === 'Admin' ||
+    currentRole === 'CEO' ||
     userDivision.toLowerCase().includes('hr') ||
     userDivision.toLowerCase().includes('operasional');
 
