@@ -71,12 +71,6 @@ export const Login: React.FC = () => {
     navigate(redirectFrom === '/login' ? '/' : redirectFrom, { replace: true });
   };
 
-  // Quick fill helper for testing/demonstration
-  const handleQuickFill = (emailVal: string, passVal: string) => {
-    setIdentifier(emailVal);
-    setPassword(passVal);
-    setErrorMessage('');
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 flex flex-col justify-center items-center p-4 sm:p-6 relative overflow-hidden">
@@ -278,49 +272,6 @@ export const Login: React.FC = () => {
           </form>
         )}
 
-        {/* Demo Fast Login Preset Box */}
-        <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 text-center">
-            Pilihan Kredensial Cepat (Uji Coba Sistem):
-          </p>
-          <div className="grid grid-cols-3 gap-2 text-xs">
-            <button
-              type="button"
-              onClick={() => handleQuickFill('admin@ruangkelana.id', 'Admin123!')}
-              className="p-2 rounded-xl bg-gray-50 hover:bg-primary-50 dark:bg-gray-800 dark:hover:bg-primary-950/40 border border-gray-200 dark:border-gray-700 text-left transition-colors cursor-pointer group"
-            >
-              <div className="font-bold text-gray-900 dark:text-white flex items-center gap-1">
-                <KeyRound size={12} className="text-primary-600" /> Admin
-              </div>
-              <p className="text-[10px] text-gray-500 mt-0.5 truncate">admin@ruangkelana.id</p>
-              <p className="text-[10px] text-primary-600 font-mono mt-0.5">Admin123!</p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickFill('siti@ruangkelana.id', 'Admin123!')}
-              className="p-2 rounded-xl bg-gray-50 hover:bg-emerald-50 dark:bg-gray-800 dark:hover:bg-emerald-950/40 border border-gray-200 dark:border-gray-700 text-left transition-colors cursor-pointer group"
-            >
-              <div className="font-bold text-gray-900 dark:text-white flex items-center gap-1">
-                <ShieldCheck size={12} className="text-emerald-600" /> Finance
-              </div>
-              <p className="text-[10px] text-gray-500 mt-0.5 truncate">siti@ruangkelana.id</p>
-              <p className="text-[10px] text-emerald-600 font-mono mt-0.5">Admin123!</p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickFill('andi@ruangkelana.id', 'Kelana2026!')}
-              className="p-2 rounded-xl bg-gray-50 hover:bg-blue-50 dark:bg-gray-800 dark:hover:bg-blue-950/40 border border-gray-200 dark:border-gray-700 text-left transition-colors cursor-pointer group"
-            >
-              <div className="font-bold text-gray-900 dark:text-white flex items-center gap-1">
-                <UserCheck size={12} className="text-blue-600" /> Staff (IT)
-              </div>
-              <p className="text-[10px] text-gray-500 mt-0.5 truncate">andi@ruangkelana.id</p>
-              <p className="text-[10px] text-blue-600 font-mono mt-0.5">Kelana2026!</p>
-            </button>
-          </div>
-        </div>
 
         {/* Security Footer */}
         <div className="mt-6 text-center text-[11px] text-gray-400 flex items-center justify-center gap-1.5">
