@@ -60,6 +60,12 @@ const ordered = (table: string, list: Item[]) => {
   return sorter ? [...list].sort(sorter) : list;
 };
 
+// Field yang nilainya ditentukan server (trigger). Setelah disimpan, nilai server
+// disalin kembali ke store agar tampilan pengirim sama dengan pengguna lain.
+const SERVER_FIELDS: Record<string, string[]> = {
+  chat_messages: ['timestamp'],
+};
+
 // ---------------- Konversi baris <-> objek ----------------
 
 export function toRow(item: Record<string, any>, columns: ColumnMap, withId = true): Record<string, any> {
@@ -132,13 +138,31 @@ async function flush(ts: TableState) {
   }
 
   if (upserts.length) {
-    const { error } = await supabase.from(ts.spec.table).upsert(upserts, { onConflict: 'id' });
+    const serverFields = SERVER_FIELDS[ts.spec.table];
+    const query = supabase.from(ts.spec.table).upsert(upserts, { onConflict: 'id' });
+    const { data, error } = serverFields ? await query.select() : await query;
     if (error) reportError(`simpan ${ts.spec.table}`, error);
+    else if (serverFields && data?.length) applyServerFields(ts, data, serverFields);
   }
   if (deletes.length) {
     const { error } = await supabase.from(ts.spec.table).delete().in('id', deletes);
     if (error) reportError(`hapus ${ts.spec.table}`, error);
   }
+}
+
+function applyServerFields(ts: TableState, rows: Record<string, any>[], fields: string[]) {
+  const byId = new Map(rows.map((r) => [r.id, fromRow(r, ts.spec.columns)]));
+  const list: Item[] = ts.store.getState()[ts.spec.key] ?? [];
+  let changed = false;
+  const next = list.map((item) => {
+    const server = byId.get(item.id);
+    if (!server || fields.every((f) => item[f] === server[f])) return item;
+    changed = true;
+    const patch: Record<string, any> = {};
+    for (const f of fields) patch[f] = server[f];
+    return { ...item, ...patch };
+  });
+  if (changed) setFromRemote(ts.store, { [ts.spec.key]: ordered(ts.spec.table, next) });
 }
 
 function queue(ts: TableState, id: string, row: Record<string, any> | null) {
@@ -205,21 +229,8 @@ export async function startSync() {
     recentWrites: new Map(),
   }));
 
-  // 1. Muat semua data dari Supabase
-  const results = await Promise.allSettled(tables.map((ts) => fetchAll(ts.spec.table)));
-  if (!running) return; // logout saat sedang memuat
-  results.forEach((res, i) => {
-    const ts = tables[i];
-    if (res.status === 'fulfilled') {
-      setFromRemote(ts.store, {
-        [ts.spec.key]: ordered(ts.spec.table, res.value.map((r) => fromRow(r, ts.spec.columns))),
-      });
-    } else {
-      reportError(`muat ${ts.spec.table}`, res.reason);
-    }
-  });
-
-  // 2. Kirim perubahan lokal ke Supabase
+  // 1. Kirim perubahan lokal ke Supabase. Dipasang sebelum memuat data,
+  //    supaya input yang dibuat selama proses memuat tidak hilang.
   const byStore = new Map<AnyStore, TableState[]>();
   for (const ts of tables) byStore.set(ts.store, [...(byStore.get(ts.store) ?? []), ts]);
   for (const [store, list] of byStore) {
@@ -232,6 +243,29 @@ export async function startSync() {
       })
     );
   }
+
+  // 2. Muat semua data dari Supabase, digabung dengan perubahan lokal yang belum/baru tersimpan
+  const results = await Promise.allSettled(tables.map((ts) => fetchAll(ts.spec.table)));
+  if (!running) return; // logout saat sedang memuat
+  results.forEach((res, i) => {
+    const ts = tables[i];
+    if (res.status === 'rejected') {
+      reportError(`muat ${ts.spec.table}`, res.reason);
+      return;
+    }
+    const isLocalChange = (id: string) => ts.pending.has(id) || ts.recentWrites.has(id);
+    const local: Item[] = ts.store.getState()[ts.spec.key] ?? [];
+    const localById = new Map(local.map((item) => [item.id, item]));
+    const remote = res.value.map((r) => fromRow(r, ts.spec.columns));
+    const remoteIds = new Set(remote.map((item) => item.id));
+    const merged = [
+      ...local.filter((item) => isLocalChange(item.id) && !remoteIds.has(item.id)),
+      ...remote
+        .filter((item) => !(ts.pending.get(item.id) === null)) // dihapus lokal
+        .map((item) => (isLocalChange(item.id) ? (localById.get(item.id) ?? item) : item)),
+    ];
+    setFromRemote(ts.store, { [ts.spec.key]: ordered(ts.spec.table, merged) });
+  });
 
   // 3. Terima perubahan dari pengguna lain (WebSocket memakai token login agar lolos RLS)
   const { data: auth } = await supabase.auth.getSession();
