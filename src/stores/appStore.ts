@@ -13,20 +13,9 @@ interface AppStore {
   addActivity: (memberId: string, action: string, target: string) => void;
 }
 
-const MEMBERS: Member[] = [
-  { id: 'member-1', name: 'Andi Wirawan', email: 'andi@ruangkelana.id', role: 'Frontend Developer', avatar: 'AW', color: '#7c3aed', online: true },
-  { id: 'member-2', name: 'Budi Santoso', email: 'budi@ruangkelana.id', role: 'Product Designer', avatar: 'BS', color: '#2563eb', online: true },
-  { id: 'member-3', name: 'Citra Dewi', email: 'citra@ruangkelana.id', role: 'Backend Developer', avatar: 'CD', color: '#10b981', online: false },
-  { id: 'member-4', name: 'Dewi Rahayu', email: 'dewi@ruangkelana.id', role: 'Project Manager', avatar: 'DR', color: '#f59e0b', online: true },
-];
+const MEMBERS: Member[] = [];
 
-const SAMPLE_ACTIVITIES: Activity[] = [
-  { id: 'a1', memberId: 'member-1', action: 'menambahkan kartu', target: 'Implementasi design system', timestamp: new Date(Date.now() - 3600000).toISOString() },
-  { id: 'a2', memberId: 'member-2', action: 'memindahkan kartu ke', target: 'Done: Desain wireframe', timestamp: new Date(Date.now() - 7200000).toISOString() },
-  { id: 'a3', memberId: 'member-3', action: 'mengedit wiki', target: 'Dokumentasi Teknis', timestamp: new Date(Date.now() - 10800000).toISOString() },
-  { id: 'a4', memberId: 'member-4', action: 'membuat catatan baru', target: 'Meeting Notes - Tim Produk', timestamp: new Date(Date.now() - 18000000).toISOString() },
-  { id: 'a5', memberId: 'member-1', action: 'menambahkan baris di', target: 'Database CRM Leads', timestamp: new Date(Date.now() - 86400000).toISOString() },
-];
+const SAMPLE_ACTIVITIES: Activity[] = [];
 
 export const useAppStore = create<AppStore>()(
   persist(
@@ -74,6 +63,6 @@ export const useAppStore = create<AppStore>()(
         }));
       },
     }),
-    { name: 'ruang-kelana-app' }
+    { name: 'ruang-kelana-app-clean' }
   )
 );

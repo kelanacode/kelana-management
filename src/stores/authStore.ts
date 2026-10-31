@@ -53,54 +53,6 @@ const DEFAULT_USERS: UserAccount[] = [
     twoFactorEnabled: false,
     createdAt: new Date().toISOString(),
   },
-  {
-    id: 'user-andi',
-    name: 'Andi Wirawan',
-    email: 'andi@ruangkelana.id',
-    username: 'andiwirawan',
-    nik: 'KEL-002',
-    division: 'Teknologi & IT',
-    position: 'Frontend Developer',
-    role: 'Staff',
-    status: 'Active',
-    avatar: 'AW',
-    color: '#2563eb',
-    passwordHash: 'e8a2ded90df286e476b6b1369ac91440b2f78f205234d1b4a8351707b1665410', // Kelana2026!
-    twoFactorEnabled: false,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'user-siti',
-    name: 'Siti Rahmawati',
-    email: 'siti@ruangkelana.id',
-    username: 'sitirahmawati',
-    nik: 'KEL-003',
-    division: 'Financial',
-    position: 'Finance & Accounting Lead',
-    role: 'Finance',
-    status: 'Active',
-    avatar: 'SR',
-    color: '#059669',
-    passwordHash: '3eb3fe66b31e3b4d10fa70b5cad49c7112294af6ae4e476a1c405155d45aa121', // Admin123!
-    twoFactorEnabled: false,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'user-dian',
-    name: 'Dian Permata',
-    email: 'dian@ruangkelana.id',
-    username: 'dianpermata',
-    nik: 'KEL-004',
-    division: 'Marketing',
-    position: 'Digital Marketing & Growth Lead',
-    role: 'Marketing',
-    status: 'Active',
-    avatar: 'DP',
-    color: '#ea580c',
-    passwordHash: '3eb3fe66b31e3b4d10fa70b5cad49c7112294af6ae4e476a1c405155d45aa121', // Admin123!
-    twoFactorEnabled: false,
-    createdAt: new Date().toISOString(),
-  },
 ];
 
 export const useAuthStore = create<AuthStore>()(
@@ -439,7 +391,7 @@ export const useAuthStore = create<AuthStore>()(
       },
     }),
     {
-      name: 'ruang-kelana-auth',
+      name: 'ruang-kelana-auth-clean',
     }
   )
 );

@@ -38,88 +38,7 @@ interface BudgetRequisitionStore {
   cancelRequisition: (id: string, reason?: string) => void;
 }
 
-const INITIAL_REQUISITIONS: BudgetRequisition[] = [
-  {
-    id: 'req-001',
-    requestNumber: 'BR-TE-2026-101',
-    title: 'Perpanjangan Lisensi Server Cloud AWS & Dedicated SSL Q4',
-    type: 'Langganan Software & Cloud',
-    department: 'Teknologi & IT',
-    requesterId: 'user-andi',
-    requesterName: 'Andi Wirawan',
-    requesterPosition: 'Frontend Developer & Lead IT',
-    estimatedAmount: 25000000,
-    description: 'Peningkatan kapasitas database RDS Postgres & auto-scaling cluster untuk menampung traffic kuartal akhir.',
-    purpose: 'Menjaga uptime sistem 99.99% dan enkripsi data perusahaan.',
-    vendorName: 'Amazon Web Services / PT Cloud Solusi',
-    isEncumbered: true,
-    departmentRemainingBefore: 105000000,
-    departmentRemainingAfter: 80000000,
-    status: 'Menunggu Persetujuan CEO',
-    hrApproval: {
-      role: 'HR',
-      name: 'Admin Kantor Kelana',
-      status: 'Approved',
-      timestamp: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-      notes: 'Sesuai dengan kebutuhan inventaris server kuartal ini.',
-    },
-    financeApproval: {
-      role: 'Finance',
-      name: 'Siti Rahmawati (Finance Lead)',
-      status: 'Approved',
-      timestamp: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
-      notes: 'Sisa pagu anggaran Teknologi & IT mencukupi (Rp 105.000.000 tersisa). Anggaran dikunci.',
-    },
-    ceoApproval: {
-      role: 'CEO',
-      name: 'CEO Kelana Corporate',
-      status: 'Pending',
-    },
-    createdAt: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
-  },
-  {
-    id: 'req-002',
-    requestNumber: 'BR-PE-2026-204',
-    title: 'Pelatihan Sertifikasi Digital Marketing & Google Analytics 4',
-    type: 'Pelatihan & Sertifikasi HR',
-    department: 'Pemasaran & Bisnis',
-    requesterId: 'user-mkt',
-    requesterName: 'Rina Kartika',
-    requesterPosition: 'Marketing Specialist',
-    estimatedAmount: 8500000,
-    description: 'Pelatihan 3 anggota tim divisi pemasaran untuk optimasi kampanye B2B dan pelacakan leads.',
-    purpose: 'Meningkatkan konversi penjualan inbound kuartal depan.',
-    vendorName: 'Growth Academy Indonesia',
-    isEncumbered: true,
-    departmentRemainingBefore: 28000000,
-    departmentRemainingAfter: 19500000,
-    status: 'Disetujui CEO (Approved)',
-    hrApproval: {
-      role: 'HR',
-      name: 'Admin Kantor Kelana',
-      status: 'Approved',
-      timestamp: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
-      notes: 'Program pengembangan kompetensi tim disetujui HRD.',
-    },
-    financeApproval: {
-      role: 'Finance',
-      name: 'Siti Rahmawati',
-      status: 'Approved',
-      timestamp: new Date(Date.now() - 36 * 3600 * 1000).toISOString(),
-      notes: 'Alokasi anggaran pelatihan tersedia.',
-    },
-    ceoApproval: {
-      role: 'CEO',
-      name: 'CEO Kelana Corporate',
-      status: 'Approved',
-      timestamp: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
-      notes: 'Disetujui. Pastikan implementasi langsung pada kampanye berikutnya.',
-    },
-    createdAt: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
-  }
-];
+const INITIAL_REQUISITIONS: BudgetRequisition[] = [];
 
 export const useBudgetRequisitionStore = create<BudgetRequisitionStore>()(
   persist(
@@ -344,7 +263,7 @@ export const useBudgetRequisitionStore = create<BudgetRequisitionStore>()(
       },
     }),
     {
-      name: 'ruang-kelana-budget-requisitions',
+      name: 'ruang-kelana-budget-requisitions-clean',
     }
   )
 );

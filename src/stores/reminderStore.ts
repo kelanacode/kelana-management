@@ -33,68 +33,7 @@ const getTomorrowFormatted = () => {
   return `${year}-${month}-${day}`;
 };
 
-const SAMPLE_REMINDERS: EventReminder[] = [
-  {
-    id: 'rem-1',
-    title: 'Sprint Planning & Review Arsitektur Sistem',
-    date: getTodayFormatted(),
-    isAllDay: false,
-    startTime: '10:00',
-    endTime: '11:30',
-    location: 'Ruang Rapat Merdeka & Google Meet (meet.google.com/xyz-ruang)',
-    reminderMinutes: 15,
-    notes: 'Membahas roadmap fitur kolaborasi real-time dan persiapan rilis v2. Harap membawa laptop dan update ticket kanban masing-masing.',
-    attachmentUrl: 'https://docs.google.com/presentation/d/sample-kelana-sprint',
-    division: 'Teknologi & IT',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'rem-2',
-    title: 'Townhall Akbar Ruang Kelana Q4',
-    date: getTomorrowFormatted(),
-    isAllDay: false,
-    startTime: '14:00',
-    endTime: '16:00',
-    location: 'Auditorium Utama Lantai 3',
-    reminderMinutes: 30,
-    notes: 'Pemaparan pencapaian kuartal, pengumuman inisiatif baru perusahaan, sesi tanya-jawab terbuka dengan pimpinan, dan ramah tamah.',
-    attachmentUrl: 'https://drive.google.com/file/d/townhall-kelana-deck',
-    division: 'Semua Divisi',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'rem-3',
-    title: 'Workshop Design System & Accessibility (A11y)',
-    date: getTomorrowFormatted(),
-    isAllDay: false,
-    startTime: '09:30',
-    endTime: '12:00',
-    location: 'Creative Studio Room & Zoom ID: 889 2314 9912',
-    reminderMinutes: 10,
-    notes: 'Pelatihan standarisasi komponen UI/UX, rasio kontras warna, dan navigasi keyboard agar aplikasi ramah disabilitas.',
-    attachmentUrl: 'https://www.figma.com/file/sample-kelana-design-system',
-    division: 'Produk & Desain',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'rem-4',
-    title: 'Hari Evaluasi Strategi Bisnis & Kemitraan',
-    date: getTomorrowFormatted(),
-    isAllDay: true,
-    startTime: '00:00',
-    endTime: '23:59',
-    location: 'Seluruh Kantor Ruang Kelana & Hybrid',
-    reminderMinutes: 60,
-    notes: 'Fokus satu hari penuh untuk peninjauan kontrak kerja sama klien korporat, target penjualan kuartal penutup, dan rencana ekspansi.',
-    attachmentUrl: 'https://drive.google.com/drive/folders/bisnis-strategi',
-    division: 'Pemasaran & Bisnis',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+const SAMPLE_REMINDERS: EventReminder[] = [];
 
 export const useReminderStore = create<ReminderStore>()(
   persist(
@@ -158,7 +97,7 @@ export const useReminderStore = create<ReminderStore>()(
       },
     }),
     {
-      name: 'ruang-kelana-reminders',
+      name: 'ruang-kelana-reminders-clean',
     }
   )
 );

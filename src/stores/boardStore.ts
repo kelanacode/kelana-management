@@ -25,150 +25,11 @@ interface BoardStore {
 
 const BOARD_ID = 'board-1';
 
-const SAMPLE_BOARDS: Board[] = [
-  {
-    id: BOARD_ID,
-    title: 'Website Redesign',
-    description: 'Proyek redesign website perusahaan Q4 2026',
-    emoji: '🎨',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'board-2',
-    title: 'Mobile App Development',
-    description: 'Pengembangan aplikasi mobile Ruang Kelana',
-    emoji: '📱',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+const SAMPLE_BOARDS: Board[] = [];
 
-const SAMPLE_COLUMNS: Column[] = [
-  { id: 'col-1', title: 'To Do', boardId: BOARD_ID, color: '#6b7280', order: 0 },
-  { id: 'col-2', title: 'In Progress', boardId: BOARD_ID, color: '#2563eb', order: 1 },
-  { id: 'col-3', title: 'Review', boardId: BOARD_ID, color: '#d97706', order: 2 },
-  { id: 'col-4', title: 'Done', boardId: BOARD_ID, color: '#10b981', order: 3 },
-  { id: 'col-5', title: 'To Do', boardId: 'board-2', color: '#6b7280', order: 0 },
-  { id: 'col-6', title: 'In Progress', boardId: 'board-2', color: '#2563eb', order: 1 },
-  { id: 'col-7', title: 'Done', boardId: 'board-2', color: '#10b981', order: 2 },
-];
+const SAMPLE_COLUMNS: Column[] = [];
 
-const SAMPLE_CARDS: Card[] = [
-  {
-    id: 'card-1',
-    title: 'Riset dan analisis kompetitor',
-    description: 'Lakukan riset mendalam terhadap 5 kompetitor utama untuk menemukan peluang desain.',
-    columnId: 'col-4',
-    boardId: BOARD_ID,
-    assignees: ['member-1'],
-    labels: [{ id: 'l1', name: 'Riset', color: '#8b5cf6' }],
-    deadline: new Date(Date.now() - 5 * 86400000).toISOString(),
-    priority: 'high',
-    comments: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    order: 0,
-  },
-  {
-    id: 'card-2',
-    title: 'Desain wireframe halaman utama',
-    description: 'Buat wireframe lo-fi untuk homepage, about, dan contact page.',
-    columnId: 'col-4',
-    boardId: BOARD_ID,
-    assignees: ['member-2'],
-    labels: [{ id: 'l2', name: 'Desain', color: '#f59e0b' }],
-    deadline: new Date(Date.now() - 2 * 86400000).toISOString(),
-    priority: 'high',
-    comments: [
-      {
-        id: 'c1',
-        author: 'Budi Santoso',
-        authorAvatar: 'BS',
-        content: 'Wireframe sudah diapprove oleh stakeholder!',
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-      }
-    ],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    order: 1,
-  },
-  {
-    id: 'card-3',
-    title: 'Implementasi design system',
-    description: 'Setup komponen dasar: button, input, card, modal, navbar sesuai brand guidelines.',
-    columnId: 'col-2',
-    boardId: BOARD_ID,
-    assignees: ['member-1', 'member-3'],
-    labels: [{ id: 'l3', name: 'Frontend', color: '#3b82f6' }],
-    deadline: new Date(Date.now() + 3 * 86400000).toISOString(),
-    priority: 'high',
-    comments: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    order: 0,
-  },
-  {
-    id: 'card-4',
-    title: 'Optimasi performa & SEO',
-    description: 'Audit Lighthouse, optimalkan Core Web Vitals, tambahkan meta tags dan schema markup.',
-    columnId: 'col-2',
-    boardId: BOARD_ID,
-    assignees: ['member-2'],
-    labels: [{ id: 'l4', name: 'SEO', color: '#10b981' }],
-    deadline: new Date(Date.now() + 7 * 86400000).toISOString(),
-    priority: 'medium',
-    comments: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    order: 1,
-  },
-  {
-    id: 'card-5',
-    title: 'Review konten dan copywriting',
-    description: 'Revisi semua teks halaman agar sesuai tone of voice brand yang baru.',
-    columnId: 'col-3',
-    boardId: BOARD_ID,
-    assignees: ['member-3'],
-    labels: [{ id: 'l5', name: 'Konten', color: '#ec4899' }],
-    deadline: new Date(Date.now() + 2 * 86400000).toISOString(),
-    priority: 'medium',
-    comments: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    order: 0,
-  },
-  {
-    id: 'card-6',
-    title: 'Setup hosting dan deployment',
-    description: 'Konfigurasi server, CI/CD pipeline, dan domain baru untuk produksi.',
-    columnId: 'col-1',
-    boardId: BOARD_ID,
-    assignees: ['member-1'],
-    labels: [{ id: 'l6', name: 'DevOps', color: '#f97316' }],
-    deadline: new Date(Date.now() + 14 * 86400000).toISOString(),
-    priority: 'low',
-    comments: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    order: 0,
-  },
-  {
-    id: 'card-7',
-    title: 'Testing lintas browser',
-    description: 'Test di Chrome, Firefox, Safari, dan Edge. Pastikan kompatibel di mobile.',
-    columnId: 'col-1',
-    boardId: BOARD_ID,
-    assignees: ['member-2', 'member-3'],
-    labels: [{ id: 'l7', name: 'QA', color: '#14b8a6' }],
-    deadline: new Date(Date.now() + 10 * 86400000).toISOString(),
-    priority: 'medium',
-    comments: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    order: 1,
-  },
-];
+const SAMPLE_CARDS: Card[] = [];
 
 export const useBoardStore = create<BoardStore>()(
   persist(
@@ -299,6 +160,6 @@ export const useBoardStore = create<BoardStore>()(
         }));
       },
     }),
-    { name: 'ruang-kelana-board' }
+    { name: 'ruang-kelana-board-clean' }
   )
 );

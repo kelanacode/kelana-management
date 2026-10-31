@@ -113,67 +113,7 @@ interface NotesStore {
   deleteComment: (noteId: string, commentId: string) => void;
 }
 
-const SAMPLE_NOTES: Note[] = [
-  {
-    id: 'note-1',
-    title: 'Selamat Datang di Ruang Kelana 🌟',
-    content: '<h1>Selamat Datang di Ruang Kelana!</h1><p>Ruang Kelana adalah ruang kerja all-in-one Anda untuk mencatat, merencanakan, dan berkolaborasi.</p><h2>Fitur Utama:</h2><ul><li><strong>Notes</strong> - Tulis catatan dan dokumen berkelas Word &amp; Google Docs</li><li><strong>Board</strong> - Kelola proyek dengan Kanban</li><li><strong>Database</strong> - Buat tabel data kustom</li><li><strong>Wiki</strong> - Bangun basis pengetahuan</li><li><strong>Kalender</strong> - Pantau jadwal dan pengingat acara (WIB)</li><li><strong>Tim</strong> - Kolaborasi bersama tim</li></ul><h3>Contoh Tabel Dokumen (Gaya Google Docs):</h3><table><thead><tr><th>No</th><th>Fitur Workspace</th><th>Kategori</th><th>Status</th></tr></thead><tbody><tr><td>1</td><td>Editor Dokumen</td><td>Word &amp; GDocs</td><td>Aktif</td></tr><tr><td>2</td><td>Tabel Visual</td><td>Grid Picker</td><td>Aktif</td></tr><tr><td>3</td><td>Papan Kanban</td><td>Manajemen Tugas</td><td>Aktif</td></tr></tbody></table><div class="callout-box"><strong>💡 Tips:</strong> Gunakan ikon <strong>Tabel</strong> di atas untuk menyisipkan tabel dengan kisi visual Google Docs, atau gunakan tombol <strong>+ Baris</strong> untuk menambah baris tabel secara instan!</div>',
-    tags: ['welcome', 'panduan'],
-    comments: [
-      {
-        id: 'comm-1',
-        selectedText: 'dokumen berkelas Word & Google Docs',
-        content: 'Fitur editor dokumen lengkap sudah aktif!',
-        author: 'Andi Wirawan',
-        authorAvatar: 'AW',
-        createdAt: new Date().toISOString(),
-        resolved: false,
-      }
-    ],
-    emoji: '🌟',
-    paperSize: 'A4',
-    color: '#fef08a', // Pastel yellow
-    isPinned: true,
-    shareScope: 'all',
-    authorName: 'Admin Kantor Kelana',
-    authorDivision: 'Operasional & HR',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'note-2',
-    title: 'Roadmap & Arsitektur IT Q4 (Divisi IT)',
-    content: '<h2>Roadmap Teknologi & Arsitektur IT Kelana</h2><p>Daftar inisiatif utama kuartal ini:</p><ul data-type="taskList"><li data-checked="true"><label><input type="checkbox" checked="checked"><span></span></label><div><p>Notifikasi push pop-up untuk agenda WIB</p></div></li><li data-checked="false"><label><input type="checkbox"><span></span></label><div><p>Mode offline untuk catatan</p></div></li><li data-checked="false"><label><input type="checkbox"><span></span></label><div><p>Sync real-time antar perangkat</p></div></li></ul><blockquote>Catatan ini dikhususkan untuk tim Teknologi &amp; IT.</blockquote>',
-    tags: ['ide', 'proyek', 'it'],
-    emoji: '💻',
-    paperSize: 'A4',
-    color: '#bae6fd', // Pastel blue
-    isPinned: false,
-    shareScope: 'division',
-    targetDivisions: ['Teknologi & IT'],
-    authorName: 'Andi Wirawan',
-    authorDivision: 'Teknologi & IT',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    id: 'note-3',
-    title: 'Briefing Khusus Andi Wirawan (Pribadi)',
-    content: '<h2>Briefing Eksklusif untuk Andi Wirawan</h2><p><strong>Pengirim:</strong> Admin / Management</p><h3>Poin Penugasan Khusus:</h3><ol><li>Refactor modul dokumen notes dan RBAC pembagian akses.</li><li>Siapkan sistem approval procurement 4 divisi.</li></ol>',
-    tags: ['rahasia', 'pribadi'],
-    emoji: '🔒',
-    paperSize: 'A4',
-    color: '#fbcfe8', // Pastel pink
-    isPinned: false,
-    shareScope: 'specific_users',
-    targetUserIds: ['user-andi'],
-    targetUserNames: ['Andi Wirawan'],
-    authorName: 'Admin Kantor Kelana',
-    authorDivision: 'Operasional & HR',
-    createdAt: new Date(Date.now() - 172800000).toISOString(),
-    updatedAt: new Date(Date.now() - 172800000).toISOString(),
-  },
-];
+const SAMPLE_NOTES: Note[] = [];
 
 export const useNotesStore = create<NotesStore>()(
   persist(
@@ -289,6 +229,6 @@ export const useNotesStore = create<NotesStore>()(
         }));
       },
     }),
-    { name: 'ruang-kelana-notes' }
+    { name: 'ruang-kelana-notes-clean' }
   )
 );

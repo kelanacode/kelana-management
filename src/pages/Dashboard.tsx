@@ -40,7 +40,7 @@ export const Dashboard: React.FC = () => {
   const { session } = useAuthStore();
   const [showBudgetReqModal, setShowBudgetReqModal] = React.useState(false);
   const [showProcurementModal, setShowProcurementModal] = React.useState(false);
-  const user = settings.currentUser;
+  const user = settings.currentUser ?? { name: session?.user.name ?? '' };
 
   // Format currency rupiah
   const formatIDR = (amount: number) => {

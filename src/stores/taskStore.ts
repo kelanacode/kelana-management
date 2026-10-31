@@ -53,96 +53,7 @@ interface TaskStore {
   }) => void;
 }
 
-const INITIAL_TASKS: CompanyTask[] = [
-  {
-    id: 'task-001',
-    title: 'Pelatihan Keamanan Siber & Tata Kelola Data Perusahaan 2026',
-    description: 'Seluruh karyawan wajib menyelesaikan modul kesadaran keamanan data, pencegahan phishing, dan kepatuhan NDA Kelana Corporate.',
-    priority: 'High',
-    status: 'Assigned',
-    targetType: 'all',
-    assignedToUserIds: ['all'],
-    assignedToNames: ['Seluruh Karyawan Kelana'],
-    createdByUserId: 'user-admin',
-    createdByName: 'Admin Kantor Kelana',
-    createdByRole: 'HR / Admin',
-    createdAt: new Date().toISOString(),
-    publishedAt: new Date().toISOString(),
-    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-    points: 100,
-    attachments: [
-      {
-        id: 'att-1',
-        name: 'Modul-SOP-Data-Security.pdf',
-        type: 'file',
-        url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
-      },
-      {
-        id: 'att-2',
-        name: 'Video Pembelajaran Cyber Awareness (YouTube)',
-        type: 'link',
-        url: 'https://www.youtube.com'
-      }
-    ],
-    openedByUserIds: ['user-admin'],
-  },
-  {
-    id: 'task-002',
-    title: 'Laporan Audit Kesiapan Infrastruktur & Cloud Q4',
-    description: 'Divisi Teknologi & IT diminta menyusun audit load testing server, keamanan database, dan cadangan pemulihan bencana (Disaster Recovery).',
-    priority: 'Urgent',
-    status: 'In Progress',
-    targetType: 'division',
-    targetDivision: 'Teknologi & IT',
-    assignedToUserIds: ['user-andi'],
-    assignedToNames: ['Andi Wirawan (Teknologi & IT)'],
-    createdByUserId: 'user-ceo',
-    createdByName: 'CEO Kelana Corporate',
-    createdByRole: 'CEO',
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    startedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-    points: 100,
-    attachments: [
-      {
-        id: 'att-3',
-        name: 'Template Checklist Audit Server (GDocs)',
-        type: 'link',
-        url: 'https://docs.google.com'
-      }
-    ],
-    openedByUserIds: ['user-andi'],
-  },
-  {
-    id: 'task-003',
-    title: 'Penyusunan Rencana Kampanye Marketing Digital November 2026',
-    description: 'Kirimkan proposal konten media sosial, alokasi budget iklan Meta & Google, serta proyeksi konversi prospek leads.',
-    priority: 'Medium',
-    status: 'Submitted',
-    targetType: 'division',
-    targetDivision: 'Pemasaran & Bisnis',
-    assignedToUserIds: ['user-mkt'],
-    assignedToNames: ['Divisi Pemasaran & Bisnis'],
-    createdByUserId: 'user-ceo',
-    createdByName: 'CEO Kelana Corporate',
-    createdByRole: 'CEO',
-    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-    publishedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-    dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
-    points: 95,
-    attachments: [],
-    openedByUserIds: ['user-mkt'],
-    submission: {
-      submittedAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
-      submittedBy: 'user-mkt',
-      submittedByName: 'Rina (Marketing Lead)',
-      notes: 'Berikut draf proposal strategi pemasaran kami. Target ROI 3.5x dengan fokus channel LinkedIn dan IG.',
-      attachmentUrl: 'https://docs.google.com/presentation',
-      attachmentName: 'Deck-Marketing-Strategy-Nov2026.pdf',
-    }
-  }
-];
+const INITIAL_TASKS: CompanyTask[] = [];
 
 export const useTaskStore = create<TaskStore>()(
   persist(
@@ -283,7 +194,7 @@ export const useTaskStore = create<TaskStore>()(
       },
     }),
     {
-      name: 'ruang-kelana-company-tasks',
+      name: 'ruang-kelana-company-tasks-clean',
     }
   )
 );

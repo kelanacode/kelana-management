@@ -4,21 +4,23 @@ import {
   CheckCircle2, Clock, TrendingUp, UserPlus
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
+import { useAuthStore } from '../stores/authStore';
 import { format, parseISO } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 
 export const Team: React.FC = () => {
   const { members, activities, settings } = useAppStore();
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([
-    { id: '1', memberId: 'member-2', content: 'Halo tim! Wireframe sudah selesai dan siap untuk review 🎨', timestamp: new Date(Date.now() - 3600000).toISOString() },
-    { id: '2', memberId: 'member-3', content: 'Bagus! Saya akan lihat setelah stand-up. Btw backend API untuk auth sudah selesai juga.', timestamp: new Date(Date.now() - 3000000).toISOString() },
-    { id: '3', memberId: 'member-4', content: '@Andi tolong update progress di board ya, deadline minggu depan.', timestamp: new Date(Date.now() - 1800000).toISOString() },
-    { id: '4', memberId: 'member-1', content: 'Siap! Sudah update. Hampir selesai tinggal testing.', timestamp: new Date(Date.now() - 900000).toISOString() },
-  ]);
+  const [messages, setMessages] = useState<{ id: string; memberId: string; content: string; timestamp: string }[]>([]);
 
   const memberMap = Object.fromEntries(members.map((m) => [m.id, m]));
-  const currentUser = settings.currentUser;
+  const sessionUser = useAuthStore((s) => s.session?.user);
+  const currentUser = settings.currentUser ?? {
+    id: sessionUser?.id ?? 'me',
+    name: sessionUser?.name ?? 'Saya',
+    avatar: sessionUser?.avatar ?? '?',
+    color: sessionUser?.color ?? '#7c3aed',
+  };
 
   const sendMessage = () => {
     if (!message.trim()) return;

@@ -87,70 +87,7 @@ interface ProcureToPayStore {
   ) => void;
 }
 
-const INITIAL_CASES: P2PProcurementCase[] = [
-  {
-    id: 'case-01',
-    caseNumber: 'P2P-2026-081',
-    title: 'Langganan Tahunan Zoom Enterprise & Figma Organization 2026',
-    type: 'Langganan Software & Cloud',
-    department: 'Teknologi & IT',
-    requesterName: 'Andi Wirawan',
-    requesterId: 'user-andi',
-    requestCategory: 'Divisi',
-    urgency: 'Penting',
-    itemName: 'Lisensi Zoom 100 Host & 15 Figma Org Seat',
-    quantity: 1,
-    unit: 'Paket 1 Tahun',
-    estimatedUnitPrice: 42000000,
-    totalEstimatedPrice: 42000000,
-    description: 'Kebutuhan koordinasi jarak jauh seluruh kantor dan perancangan prototype UI/UX sistem Kelana.',
-    justification: 'Lisensi sebelumnya akan habis tanggal 15 November 2026.',
-    stage: 'PR Approved',
-    managerApproval: { approved: true, by: 'Budi Santoso (VP IT)', timestamp: new Date(Date.now() - 48 * 3600 * 1000).toISOString() },
-    ceoApproval: { approved: true, by: 'CEO Kelana Corporate (Bypass Disetujui)', timestamp: new Date(Date.now() - 24 * 3600 * 1000).toISOString() },
-    createdAt: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-  },
-  {
-    id: 'case-02',
-    caseNumber: 'P2P-2026-079',
-    title: 'Pengadaan 10 Unit Laptop Apple MacBook Pro M3 untuk Engineering',
-    type: 'Perangkat Keras (Asset)',
-    department: 'Teknologi & IT',
-    requesterName: 'Andi Wirawan',
-    requesterId: 'user-andi',
-    requestCategory: 'Divisi',
-    urgency: 'Mendesak / Urgent',
-    itemName: 'MacBook Pro M3 Pro 18GB/512GB Space Black',
-    quantity: 10,
-    unit: 'Unit',
-    estimatedUnitPrice: 28500000,
-    totalEstimatedPrice: 285000000,
-    description: 'Spesifikasi developer untuk build mobile Flutter & microservice backend.',
-    justification: 'Penggantian perangkat lama yang berumur lebih dari 3 tahun (Asset Refreshment).',
-    stage: 'GR Received',
-    ceoApproval: { approved: true, by: 'CEO Kelana Corporate', timestamp: new Date(Date.now() - 6 * 24 * 3600 * 1000).toISOString() },
-    poNumber: 'PO-KELANA-2026-042',
-    selectedVendor: 'iBox / PT Erajaya Swasembada Tbk',
-    selectedVendorContact: '021-5291-6000 (B2B Enterprise Dept)',
-    agreedPrice: 280000000,
-    paymentTerms: 'Term of Payment 30 Hari (Net 30)',
-    poIssuedAt: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(),
-    poIssuedBy: 'Tim Purchasing Kelana',
-    grNumber: 'GR-BAST-2026-033',
-    deliveryNoteNumber: 'DN-IBOX-88912-JKT',
-    receivedAt: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(),
-    receivedBy: 'Gudang & GA (Surat Jalan Verified)',
-    receivedQuantity: 10,
-    qcStatus: 'Passed (Sesuai)',
-    bastNotes: 'Semua 10 unit tersegel rapi, nomor seri (Serial Number) terdata lengkap untuk modul Aset Tetap.',
-    vendorInvoiceNumber: 'INV/2026/XI/88921-ERA',
-    taxInvoiceNumber: '010.002-26.99120199',
-    invoiceAmount: 280000000,
-    createdAt: new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(),
-  }
-];
+const INITIAL_CASES: P2PProcurementCase[] = [];
 
 export const useProcureToPayStore = create<ProcureToPayStore>()(
   persist(
@@ -357,7 +294,7 @@ export const useProcureToPayStore = create<ProcureToPayStore>()(
       },
     }),
     {
-      name: 'ruang-kelana-procure-to-pay',
+      name: 'ruang-kelana-procure-to-pay-clean',
     }
   )
 );

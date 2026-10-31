@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useBoardStore } from '../stores/boardStore';
 import { useAppStore } from '../stores/appStore';
+import { useAuthStore } from '../stores/authStore';
 import { Card, Column, Priority } from '../types';
 import { format, parseISO, isPast } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
@@ -39,6 +40,12 @@ const priorityConfig: Record<Priority, { label: string; color: string; bg: strin
 const CardModal: React.FC<{ card: Card; onClose: () => void }> = ({ card, onClose }) => {
   const { updateCard, addComment, deleteCard } = useBoardStore();
   const { settings, members } = useAppStore();
+  const sessionUser = useAuthStore((s) => s.session?.user);
+  const me = settings.currentUser ?? {
+    name: sessionUser?.name ?? 'Saya',
+    avatar: sessionUser?.avatar ?? '?',
+    color: sessionUser?.color ?? '#7c3aed',
+  };
   const [comment, setComment] = useState('');
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description);
@@ -47,7 +54,7 @@ const CardModal: React.FC<{ card: Card; onClose: () => void }> = ({ card, onClos
 
   const handleSubmitComment = () => {
     if (!comment.trim()) return;
-    addComment(card.id, comment, settings.currentUser.name, settings.currentUser.avatar);
+    addComment(card.id, comment, me.name, me.avatar);
     setComment('');
   };
 
@@ -189,8 +196,8 @@ const CardModal: React.FC<{ card: Card; onClose: () => void }> = ({ card, onClos
               ))}
             </div>
             <div className="flex gap-2">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: settings.currentUser.color }}>
-                {settings.currentUser.avatar}
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: me.color }}>
+                {me.avatar}
               </div>
               <div className="flex-1 flex gap-2">
                 <input

@@ -58,84 +58,9 @@ interface AttendanceStore {
 }
 
 // Initial Sample Data for HR Dashboard Demonstration
-const SAMPLE_RECORDS: AttendanceRecord[] = [
-  {
-    id: 'att-1',
-    userId: 'user-andi',
-    userName: 'Andi Wirawan',
-    userNik: 'KEL-002',
-    userDivision: 'Teknologi & IT',
-    date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-    clockInTime: '08:15:20',
-    clockInTimestamp: new Date(Date.now() - 86400000).toISOString(),
-    clockInLocation: {
-      latitude: -6.21465,
-      longitude: 106.81842,
-      isInsideOfficeGeofence: true,
-      distanceFromOfficeMeters: 25,
-      address: 'Menara Kelana Sudirman, Lt. 12',
-      ipAddress: '192.168.1.104 (Wi-Fi Kantor)',
-    },
-    clockOutTime: '17:30:10',
-    clockOutTimestamp: new Date(Date.now() - 86400000 + 9 * 3600000).toISOString(),
-    clockOutNotes: 'Menyelesaikan modul auth & testing komponen TipTap editor.',
-    clockOutLocation: {
-      latitude: -6.21460,
-      longitude: 106.81849,
-      isInsideOfficeGeofence: true,
-      distanceFromOfficeMeters: 30,
-      address: 'Menara Kelana Sudirman, Lt. 12',
-      ipAddress: '192.168.1.104 (Wi-Fi Kantor)',
-    },
-    workType: 'WFO',
-    status: 'Tepat Waktu',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000 + 9 * 3600000).toISOString(),
-  },
-  {
-    id: 'att-2',
-    userId: 'user-budi',
-    userName: 'Budi Santoso',
-    userNik: 'KEL-003',
-    userDivision: 'Produk & Desain',
-    date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-    clockInTime: '09:12:00',
-    clockInTimestamp: new Date(Date.now() - 86400000 + 3600000).toISOString(),
-    clockInLocation: {
-      latitude: -6.21470,
-      longitude: 106.81850,
-      isInsideOfficeGeofence: true,
-      distanceFromOfficeMeters: 40,
-      address: 'Menara Kelana Sudirman, Lt. 12',
-      ipAddress: '192.168.1.112 (Wi-Fi Kantor)',
-    },
-    clockOutTime: '17:05:00',
-    clockOutTimestamp: new Date(Date.now() - 86400000 + 9 * 3600000).toISOString(),
-    clockOutNotes: 'Figma review & user journey mapping selesai.',
-    workType: 'WFO',
-    status: 'Terlambat',
-    hasAnomaly: true,
-    anomalyReason: 'Masuk melebihi toleransi (09:12 WIB)',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000 + 9 * 3600000).toISOString(),
-  },
-];
+const SAMPLE_RECORDS: AttendanceRecord[] = [];
 
-const SAMPLE_CORRECTIONS: AttendanceCorrectionRequest[] = [
-  {
-    id: 'corr-1',
-    userId: 'user-budi',
-    userName: 'Budi Santoso',
-    userNik: 'KEL-003',
-    userDivision: 'Produk & Desain',
-    date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-    type: 'Koreksi Jam',
-    reason: 'Kendala teknis jaringan saat membuka browser pagi hari.',
-    proposedClockIn: '08:25',
-    status: 'Pending',
-    createdAt: new Date().toISOString(),
-  },
-];
+const SAMPLE_CORRECTIONS: AttendanceCorrectionRequest[] = [];
 
 export const useAttendanceStore = create<AttendanceStore>()(
   persist(
@@ -414,7 +339,7 @@ export const useAttendanceStore = create<AttendanceStore>()(
       },
     }),
     {
-      name: 'ruang-kelana-attendance',
+      name: 'ruang-kelana-attendance-clean',
     }
   )
 );

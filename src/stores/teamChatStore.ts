@@ -36,57 +36,7 @@ interface TeamChatStore {
   }) => void;
 }
 
-const INITIAL_MESSAGES: ChatMessage[] = [
-  {
-    id: 'msg-1',
-    senderId: 'user-budi',
-    senderName: 'Budi Santoso',
-    senderAvatar: 'BS',
-    senderColor: '#2563eb',
-    senderRole: 'Product Designer',
-    content: 'Halo tim! Wireframe dan design flow sudah saya upload di board ya 🎨',
-    timestamp: new Date(Date.now() - 3600000).toISOString(),
-    recipientId: 'all',
-    readByUserIds: ['user-budi'],
-  },
-  {
-    id: 'msg-2',
-    senderId: 'user-citra',
-    senderName: 'Citra Dewi',
-    senderAvatar: 'CD',
-    senderColor: '#10b981',
-    senderRole: 'Backend Developer',
-    content: 'Mantap Budi! Endpoint REST API untuk module penugasan sudah ready di staging.',
-    timestamp: new Date(Date.now() - 2500000).toISOString(),
-    recipientId: 'all',
-    readByUserIds: ['user-citra'],
-  },
-  {
-    id: 'msg-3',
-    senderId: 'user-ceo',
-    senderName: 'CEO Kelana Corporate',
-    senderAvatar: 'CEO',
-    senderColor: '#7c3aed',
-    senderRole: 'Chief Executive Officer',
-    content: 'Selamat sore rekan-rekan. Mohon seluruh divisi pastikan laporan taks dan rencana Q4 sudah diperbarui sore ini. Terima kasih!',
-    timestamp: new Date(Date.now() - 900000).toISOString(),
-    recipientId: 'all',
-    readByUserIds: ['user-ceo'],
-  },
-  {
-    id: 'msg-dm-1',
-    senderId: 'user-admin',
-    senderName: 'Admin Kantor Kelana',
-    senderAvatar: 'AD',
-    senderColor: '#7c3aed',
-    senderRole: 'HR & Administrator',
-    content: 'Halo rekan tim! Mohon cek data kehadiran dan rincian slip gaji di sistem ya.',
-    timestamp: new Date(Date.now() - 600000).toISOString(),
-    recipientId: 'user-andi',
-    recipientName: 'Andi Wirawan',
-    readByUserIds: ['user-admin'],
-  },
-];
+const INITIAL_MESSAGES: ChatMessage[] = [];
 
 // Helper: Cek apakah user saat ini berhak melihat pesan chat
 export const isMessageForUser = (msg: ChatMessage, userId: string): boolean => {
@@ -186,7 +136,7 @@ export const useTeamChatStore = create<TeamChatStore>()(
       },
     }),
     {
-      name: 'ruang-kelana-team-chat-v3',
+      name: 'ruang-kelana-team-chat-v3-clean',
     }
   )
 );
