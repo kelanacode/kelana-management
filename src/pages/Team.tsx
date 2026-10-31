@@ -5,11 +5,24 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import { useAuthStore } from '../stores/authStore';
+import { useChatStore } from '../stores/chatStore';
 import { format, parseISO } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 
 export const Team: React.FC = () => {
   const { members, activities, settings } = useAppStore();
+  // Status nyata dari koneksi aktif (Supabase Presence): online, away, atau offline
+  const presence = useChatStore((s) => s.presence);
+  const statusOf = (id: string) => presence[id] ?? 'offline';
+  const STATUS_STYLE = {
+    online: { dot: 'bg-green-500', text: 'text-green-500', label: 'Online' },
+    away: { dot: 'bg-amber-400', text: 'text-amber-500', label: 'Away' },
+    offline: { dot: 'bg-gray-300 dark:bg-gray-600', text: 'text-gray-400', label: 'Offline' },
+  } as const;
+  const STATUS_RANK = { online: 0, away: 1, offline: 2 } as const;
+  const sortedMembers = [...members].sort(
+    (a, b) => STATUS_RANK[statusOf(a.id)] - STATUS_RANK[statusOf(b.id)] || a.name.localeCompare(b.name)
+  );
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<{ id: string; memberId: string; content: string; timestamp: string }[]>([]);
 
@@ -52,12 +65,12 @@ export const Team: React.FC = () => {
               <Users size={16} className="text-primary-600" /> Anggota Tim
             </h3>
             <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
-              {members.filter((m) => m.online).length}/{members.length} online
+              {members.filter((m) => statusOf(m.id) === 'online').length}/{members.length} online
             </span>
           </div>
           <div className="space-y-3">
-            {members.map((member) => (
-              <div key={member.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            {sortedMembers.map((member) => (
+              <div key={member.id} className={`flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${statusOf(member.id) === 'offline' ? 'opacity-60' : ''}`}>
                 <div className="relative">
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
@@ -65,7 +78,7 @@ export const Team: React.FC = () => {
                   >
                     {member.avatar}
                   </div>
-                  <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-900 ${member.online ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-900 ${STATUS_STYLE[statusOf(member.id)].dot}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{member.name}</p>
@@ -73,9 +86,9 @@ export const Team: React.FC = () => {
                     {member.role}
                   </span>
                 </div>
-                {member.online && (
-                  <span className="text-xs text-green-500 font-medium flex-shrink-0">Online</span>
-                )}
+                <span className={`text-xs font-medium flex-shrink-0 ${STATUS_STYLE[statusOf(member.id)].text}`}>
+                  {STATUS_STYLE[statusOf(member.id)].label}
+                </span>
               </div>
             ))}
           </div>
