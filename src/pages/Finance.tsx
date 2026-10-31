@@ -1416,7 +1416,7 @@ export const FinancePage: React.FC = () => {
                           </button>
                         ) : po.paymentStatus !== 'Lunas' ? (
                           <button
-                            onClick={() => finance.payPurchaseOrder(po.id, finance.bankAccounts[0].id)}
+                            onClick={() => finance.payPurchaseOrder(po.id, finance.bankAccounts[0]?.id || '')}
                             className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-semibold flex items-center gap-1 mx-auto cursor-pointer"
                             title="Bayar tagihan utang vendor melalui Bank"
                           >
@@ -1522,7 +1522,7 @@ export const FinancePage: React.FC = () => {
                           </button>
                         ) : so.paymentStatus !== 'Paid (Mekari/Bank)' ? (
                           <button
-                            onClick={() => finance.reconcileSalesPayment(so.id, finance.bankAccounts[0].id, 'Mekari Pay Gateway')}
+                            onClick={() => finance.reconcileSalesPayment(so.id, finance.bankAccounts[0]?.id || '', 'Mekari Pay Gateway')}
                             className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-semibold flex items-center gap-1 mx-auto"
                             title="Rekonsiliasi pelunasan transfer klien ke rekening bank"
                           >
@@ -1898,7 +1898,7 @@ export const FinancePage: React.FC = () => {
                           </span>
                         ) : (
                           <button
-                            onClick={() => finance.disbursePayrollRecord(pay.id, finance.bankAccounts[1]?.id || finance.bankAccounts[0].id)}
+                            onClick={() => finance.disbursePayrollRecord(pay.id, finance.bankAccounts[1]?.id || finance.bankAccounts[0]?.id || '')}
                             className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-semibold flex items-center gap-1 mx-auto"
                             title="Salurkan gaji dan otomatis buat jurnal beban di General Ledger"
                           >
@@ -2019,6 +2019,8 @@ export const FinancePage: React.FC = () => {
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                           b.status === 'Aman'
                             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
+                            : b.status === 'Over Budget'
+                            ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300'
                             : 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
                         }`}
                       >
@@ -3605,6 +3607,842 @@ export const FinancePage: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Modal Tambah Rekening Bank */}
+      {showAddBankModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 dark:border-gray-700 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="font-bold text-base text-gray-900 dark:text-white flex items-center gap-2">
+                <CreditCard size={18} className="text-emerald-600" />
+                Tambah Rekening Kas & Bank
+              </h3>
+              <button onClick={() => setShowAddBankModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={18} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!bankForm.bankName || !bankForm.accountNumber) return;
+                finance.addBankAccount(bankForm);
+                setShowAddBankModal(false);
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Nama Bank / Akun Kas</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Misal: Bank BNI Operasional, Kas Kecil"
+                  value={bankForm.bankName}
+                  onChange={(e) => setBankForm({ ...bankForm, bankName: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Nomor Rekening</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="123-456-7890"
+                  value={bankForm.accountNumber}
+                  onChange={(e) => setBankForm({ ...bankForm, accountNumber: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Atas Nama</label>
+                <input
+                  type="text"
+                  value={bankForm.accountHolder}
+                  onChange={(e) => setBankForm({ ...bankForm, accountHolder: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Saldo Awal (Rp)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={bankForm.balance || ''}
+                  onChange={(e) => setBankForm({ ...bankForm, balance: Number(e.target.value) })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-semibold"
+                />
+              </div>
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddBankModal(false)}
+                  className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center gap-1.5"
+                >
+                  <Check size={13} /> Simpan Rekening
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Edit Rekening Bank */}
+      {editingBank && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 dark:border-gray-700 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="font-bold text-base text-gray-900 dark:text-white flex items-center gap-2">
+                <Pencil size={18} className="text-blue-600" />
+                Edit Rekening: {editingBank.bankName}
+              </h3>
+              <button onClick={() => setEditingBank(null)} className="text-gray-400 hover:text-gray-600">
+                <X size={18} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!editingBank.bankName || !editingBank.accountNumber) return;
+                finance.updateBankAccount(editingBank.id, {
+                  bankName: editingBank.bankName,
+                  accountNumber: editingBank.accountNumber,
+                  balance: editingBank.balance,
+                });
+                setEditingBank(null);
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Nama Bank / Akun Kas</label>
+                <input
+                  type="text"
+                  required
+                  value={editingBank.bankName}
+                  onChange={(e) => setEditingBank({ ...editingBank, bankName: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Nomor Rekening</label>
+                <input
+                  type="text"
+                  required
+                  value={editingBank.accountNumber}
+                  onChange={(e) => setEditingBank({ ...editingBank, accountNumber: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Saldo (Rp)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={editingBank.balance}
+                  onChange={(e) => setEditingBank({ ...editingBank, balance: Number(e.target.value) })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-semibold"
+                />
+                <p className="text-[10px] text-gray-400 mt-1">Untuk setor/tarik yang tercatat di jurnal, gunakan tombol + / − pada kartu rekening.</p>
+              </div>
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingBank(null)}
+                  className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-1.5"
+                >
+                  <Check size={13} /> Simpan Perubahan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Setor / Tarik Saldo Bank */}
+      {adjustingBank && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-100 dark:border-gray-700 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="font-bold text-base text-gray-900 dark:text-white flex items-center gap-2">
+                {adjustingBank.type === 'add' ? (
+                  <>
+                    <ArrowDownLeft size={18} className="text-emerald-600" />
+                    Setor ke {adjustingBank.bankName}
+                  </>
+                ) : (
+                  <>
+                    <ArrowUpRight size={18} className="text-rose-600" />
+                    Tarik dari {adjustingBank.bankName}
+                  </>
+                )}
+              </h3>
+              <button onClick={() => setAdjustingBank(null)} className="text-gray-400 hover:text-gray-600">
+                <X size={18} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (adjustingBank.amount <= 0) return;
+                const delta = adjustingBank.type === 'add' ? adjustingBank.amount : -adjustingBank.amount;
+                finance.adjustBankBalance(adjustingBank.id, delta, adjustingBank.description || undefined);
+                setAdjustingBank(null);
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">
+                  Nominal {adjustingBank.type === 'add' ? 'Setoran' : 'Penarikan'} (Rp)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  required
+                  value={adjustingBank.amount}
+                  onChange={(e) => setAdjustingBank({ ...adjustingBank, amount: Number(e.target.value) })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-semibold"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Keterangan (opsional)</label>
+                <input
+                  type="text"
+                  placeholder="Misal: Setoran modal, penarikan kas kecil"
+                  value={adjustingBank.description}
+                  onChange={(e) => setAdjustingBank({ ...adjustingBank, description: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <p className="text-[10px] text-gray-400">Mutasi ini otomatis dicatat sebagai jurnal Kas/Bank.</p>
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAdjustingBank(null)}
+                  className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className={`px-4 py-1.5 rounded-lg text-white font-semibold flex items-center gap-1.5 ${
+                    adjustingBank.type === 'add' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'
+                  }`}
+                >
+                  <Check size={13} /> Konfirmasi {adjustingBank.type === 'add' ? 'Setor' : 'Tarik'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Jurnal Umum Manual */}
+      {showJEModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full p-6 shadow-xl border border-gray-100 dark:border-gray-700 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="font-bold text-base text-gray-900 dark:text-white flex items-center gap-2">
+                <FileText size={18} className="text-emerald-600" />
+                Input Jurnal Umum Manual
+              </h3>
+              <button onClick={() => setShowJEModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleCreateJE} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Deskripsi Transaksi</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Misal: Pembayaran sewa kantor bulan November"
+                  value={jeForm.description}
+                  onChange={(e) => setJeForm({ ...jeForm, description: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">No. Referensi</label>
+                  <input
+                    type="text"
+                    placeholder="INV-001 / BKK-001"
+                    value={jeForm.reference}
+                    onChange={(e) => setJeForm({ ...jeForm, reference: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Kategori</label>
+                  <select
+                    value={jeForm.category}
+                    onChange={(e) => setJeForm({ ...jeForm, category: e.target.value as typeof jeForm.category })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    {['Kas/Bank', 'Utang', 'Piutang', 'Biaya Operasional', 'Pendapatan', 'Aset Tetap'].map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Akun Debit</label>
+                <input
+                  type="text"
+                  required
+                  value={jeForm.accountDebit}
+                  onChange={(e) => setJeForm({ ...jeForm, accountDebit: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Akun Kredit</label>
+                <input
+                  type="text"
+                  required
+                  value={jeForm.accountCredit}
+                  onChange={(e) => setJeForm({ ...jeForm, accountCredit: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Nominal (Rp)</label>
+                <input
+                  type="number"
+                  min="1"
+                  required
+                  value={jeForm.amount || ''}
+                  onChange={(e) => setJeForm({ ...jeForm, amount: Number(e.target.value) })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-semibold"
+                />
+              </div>
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowJEModal(false)}
+                  className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center gap-1.5"
+                >
+                  <Check size={13} /> Posting Jurnal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Sales Order Baru */}
+      {showSOModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full p-6 shadow-xl border border-gray-100 dark:border-gray-700 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="font-bold text-base text-gray-900 dark:text-white flex items-center gap-2">
+                <Receipt size={18} className="text-blue-600" />
+                Buat Sales Order (SO) Baru
+              </h3>
+              <button onClick={() => setShowSOModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleCreateSO} className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Nama Klien</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="PT / Nama Acara"
+                    value={soForm.customerCompany}
+                    onChange={(e) => setSoForm({ ...soForm, customerCompany: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Nama PIC Klien</label>
+                  <input
+                    type="text"
+                    required
+                    value={soForm.customerName}
+                    onChange={(e) => setSoForm({ ...soForm, customerName: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Paket</label>
+                <select
+                  value={soForm.packageType}
+                  onChange={(e) =>
+                    setSoForm({ ...soForm, packageType: e.target.value as typeof soForm.packageType, durationIndex: 0 })
+                  }
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="photostrip">{PACKAGES_CONFIG.photostrip.name}</option>
+                  <option value="postcard">{PACKAGES_CONFIG.postcard.name}</option>
+                  <option value="custom">Paket Custom</option>
+                </select>
+              </div>
+              {soForm.packageType === 'custom' ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Nama Paket Custom</label>
+                    <input
+                      type="text"
+                      required
+                      value={soForm.customPackageName}
+                      onChange={(e) => setSoForm({ ...soForm, customPackageName: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Durasi</label>
+                    <input
+                      type="text"
+                      placeholder="Misal: 6 jam"
+                      value={soForm.customDuration}
+                      onChange={(e) => setSoForm({ ...soForm, customDuration: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Total Harga (Rp)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      required
+                      value={soForm.customPrice || ''}
+                      onChange={(e) => setSoForm({ ...soForm, customPrice: Number(e.target.value) })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-semibold"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Durasi</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {PACKAGES_CONFIG[soForm.packageType].durations.map((d, idx) => (
+                      <button
+                        key={d.label}
+                        type="button"
+                        onClick={() => setSoForm({ ...soForm, durationIndex: idx })}
+                        className={`p-2 rounded-lg border text-left ${
+                          soForm.durationIndex === idx
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40'
+                            : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        <div className="font-semibold text-gray-900 dark:text-white">{d.label}</div>
+                        <div className="text-[10px] text-gray-400 line-through">{formatIDR(d.originalPrice)}</div>
+                        <div className="font-bold text-blue-600">{formatIDR(d.price)}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowSOModal(false)}
+                  className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-1.5"
+                >
+                  <Send size={13} /> Buat Sales Order
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Klaim Beban Operasional */}
+      {showClaimModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-xl border border-gray-100 dark:border-gray-700 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="font-bold text-base text-gray-900 dark:text-white flex items-center gap-2">
+                <Wallet size={18} className="text-purple-600" />
+                Klaim Beban Operasional
+              </h3>
+              <button onClick={() => setShowClaimModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleCreateClaim} className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Nama Pengaju</label>
+                  <input
+                    type="text"
+                    required
+                    value={claimForm.claimantName}
+                    onChange={(e) => setClaimForm({ ...claimForm, claimantName: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Divisi</label>
+                  <select
+                    value={claimForm.department}
+                    onChange={(e) => setClaimForm({ ...claimForm, department: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    {!DIVISION_OPTIONS.includes(claimForm.department) && claimForm.department && (
+                      <option value={claimForm.department}>{claimForm.department}</option>
+                    )}
+                    {DIVISION_OPTIONS.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Deskripsi Pengeluaran</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Misal: Bensin & tol ke lokasi event"
+                  value={claimForm.description}
+                  onChange={(e) => setClaimForm({ ...claimForm, description: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Kategori</label>
+                  <select
+                    value={claimForm.category}
+                    onChange={(e) => setClaimForm({ ...claimForm, category: e.target.value as any })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    {['Petty Cash', 'Transport & Perjalanan', 'Konsumsi & Meeting', 'Langganan Software', 'Operasional'].map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Nominal (Rp)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={claimForm.amount || ''}
+                    onChange={(e) => setClaimForm({ ...claimForm, amount: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-semibold"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold flex items-center gap-1.5"
+                >
+                  <Send size={13} /> Ajukan Klaim
+                </button>
+              </div>
+            </form>
+
+            <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
+              <h4 className="font-bold text-xs text-gray-700 dark:text-gray-200 mb-2">
+                Daftar Klaim ({finance.expenseClaims.length})
+              </h4>
+              {finance.expenseClaims.length === 0 ? (
+                <p className="text-xs text-gray-400">Belum ada klaim.</p>
+              ) : (
+                <div className="space-y-2">
+                  {finance.expenseClaims.map((c) => (
+                    <div
+                      key={c.id}
+                      className="p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-between gap-2 text-xs"
+                    >
+                      <div className="min-w-0">
+                        <div className="font-semibold text-gray-900 dark:text-white truncate">
+                          {c.claimNumber} • {c.description}
+                        </div>
+                        <div className="text-[10px] text-gray-500">
+                          {c.claimantName} ({c.department}) • {c.category} • {c.submissionDate}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="font-bold text-gray-800 dark:text-gray-200">{formatIDR(c.amount)}</span>
+                        {c.status === 'Pending Approval' ? (
+                          <>
+                            <button
+                              type="button"
+                              disabled={finance.bankAccounts.length === 0}
+                              onClick={() =>
+                                finance.approveAndReimburseExpenseClaim(
+                                  c.id,
+                                  session?.user.name || 'Finance',
+                                  finance.bankAccounts[0]?.id || ''
+                                )
+                              }
+                              className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded text-[10px] font-bold flex items-center gap-0.5"
+                              title="Setujui & cairkan dari rekening utama"
+                            >
+                              <Check size={11} /> Setujui
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => finance.rejectExpenseClaim(c.id)}
+                              className="px-1.5 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded text-[10px] font-bold"
+                              title="Tolak klaim"
+                            >
+                              <X size={11} />
+                            </button>
+                          </>
+                        ) : (
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              c.status === 'Rejected'
+                                ? 'bg-rose-100 text-rose-700'
+                                : 'bg-emerald-100 text-emerald-700'
+                            }`}
+                          >
+                            {c.status}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Tambah / Edit Item Persediaan */}
+      {(showAddInventoryModal || editingInventory) && (() => {
+        const isEdit = !!editingInventory;
+        const form = editingInventory ?? inventoryForm;
+        const setForm = (patch: Partial<typeof inventoryForm>) =>
+          isEdit
+            ? setEditingInventory({ ...editingInventory!, ...patch })
+            : setInventoryForm({ ...inventoryForm, ...patch });
+        const close = () => (isEdit ? setEditingInventory(null) : setShowAddInventoryModal(false));
+        return (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full p-6 shadow-xl border border-gray-100 dark:border-gray-700 space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+                <h3 className="font-bold text-base text-gray-900 dark:text-white flex items-center gap-2">
+                  <Boxes size={18} className="text-emerald-600" />
+                  {isEdit ? `Edit Item: ${editingInventory!.name}` : 'Tambah Item Persediaan'}
+                </h3>
+                <button onClick={close} className="text-gray-400 hover:text-gray-600">
+                  <X size={18} />
+                </button>
+              </div>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!form.name) return;
+                  const { sku, name, category, stock, minStock, unit, valuationPerUnit, warehouseLocation } = form;
+                  const data = { sku, name, category, stock, minStock, unit, valuationPerUnit, warehouseLocation };
+                  if (isEdit) {
+                    finance.updateInventoryItem(editingInventory!.id, data);
+                  } else {
+                    finance.addInventoryItem(data);
+                  }
+                  close();
+                }}
+                className="space-y-3 text-xs"
+              >
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">SKU</label>
+                    <input
+                      type="text"
+                      required
+                      value={form.sku}
+                      onChange={(e) => setForm({ sku: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Nama Barang</label>
+                    <input
+                      type="text"
+                      required
+                      value={form.name}
+                      onChange={(e) => setForm({ name: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Kategori</label>
+                    <input
+                      type="text"
+                      value={form.category}
+                      onChange={(e) => setForm({ category: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Lokasi Gudang</label>
+                    <input
+                      type="text"
+                      value={form.warehouseLocation}
+                      onChange={(e) => setForm({ warehouseLocation: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Stok</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={form.stock}
+                      onChange={(e) => setForm({ stock: Number(e.target.value) })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Stok Minimum</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={form.minStock}
+                      onChange={(e) => setForm({ minStock: Number(e.target.value) })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Satuan</label>
+                    <input
+                      type="text"
+                      value={form.unit}
+                      onChange={(e) => setForm({ unit: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Harga Perolehan per Satuan (Rp)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.valuationPerUnit || ''}
+                    onChange={(e) => setForm({ valuationPerUnit: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-semibold"
+                  />
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Total nilai: <strong>{formatIDR(form.stock * form.valuationPerUnit)}</strong>
+                  </p>
+                </div>
+                <div className="pt-2 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={close}
+                    className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center gap-1.5"
+                  >
+                    <Check size={13} /> {isEdit ? 'Simpan Perubahan' : 'Tambah Item'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Modal Penyesuaian Stok */}
+      {adjustingInventory && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-100 dark:border-gray-700 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="font-bold text-base text-gray-900 dark:text-white flex items-center gap-2">
+                {adjustingInventory.type === 'add' ? (
+                  <Plus size={18} className="text-emerald-600" />
+                ) : (
+                  <Minus size={18} className="text-rose-600" />
+                )}
+                {adjustingInventory.type === 'add' ? 'Stok Masuk' : 'Stok Keluar'}: {adjustingInventory.name}
+              </h3>
+              <button onClick={() => setAdjustingInventory(null)} className="text-gray-400 hover:text-gray-600">
+                <X size={18} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (adjustingInventory.amount <= 0) return;
+                const delta = adjustingInventory.type === 'add' ? adjustingInventory.amount : -adjustingInventory.amount;
+                finance.adjustInventoryStock(adjustingInventory.sku, delta, adjustingInventory.reason);
+                setAdjustingInventory(null);
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Jumlah</label>
+                <input
+                  type="number"
+                  min="1"
+                  required
+                  value={adjustingInventory.amount}
+                  onChange={(e) => setAdjustingInventory({ ...adjustingInventory, amount: Number(e.target.value) })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-semibold"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Alasan</label>
+                <input
+                  type="text"
+                  placeholder="Misal: Pembelian baru, dipakai event, rusak"
+                  value={adjustingInventory.reason}
+                  onChange={(e) => setAdjustingInventory({ ...adjustingInventory, reason: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAdjustingInventory(null)}
+                  className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className={`px-4 py-1.5 rounded-lg text-white font-semibold flex items-center gap-1.5 ${
+                    adjustingInventory.type === 'add' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'
+                  }`}
+                >
+                  <Check size={13} /> Konfirmasi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Procure-to-Pay (P2P) Full Workflow Modal */}
       <ProcureToPayModal
         isOpen={showP2PModal}
