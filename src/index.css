@@ -1,0 +1,730 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Dancing+Script:wght@600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Roboto+Mono:wght@400;500;600&display=swap');
+
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary-50: #f5f3ff;
+  --color-primary-100: #ede9fe;
+  --color-primary-200: #ddd6fe;
+  --color-primary-300: #c4b5fd;
+  --color-primary-400: #a78bfa;
+  --color-primary-500: #8b5cf6;
+  --color-primary-600: #7c3aed;
+  --color-primary-700: #6d28d9;
+  --color-primary-800: #5b21b6;
+  --color-primary-900: #4c1d95;
+  --font-family-sans: 'Inter', system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 transition-colors duration-200;
+  }
+
+  .dark body, body.dark, html.dark body {
+    @apply bg-gray-950 text-gray-100;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+
+  .dark ::-webkit-scrollbar-thumb, html.dark ::-webkit-scrollbar-thumb {
+    @apply bg-gray-700;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg font-medium text-sm hover:bg-primary-700 transition-colors shadow-sm cursor-pointer;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm cursor-pointer dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700;
+  }
+
+  .card {
+    @apply bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700 transition-colors;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 placeholder:text-gray-400 transition-colors;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors cursor-pointer dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100;
+  }
+
+  .sidebar-item.active {
+    @apply bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 font-semibold;
+  }
+}
+
+/* TipTap Editor Styles & Document Layout (Google Docs / MS Word Style) */
+.doc-page-canvas {
+  background: white;
+  color: #111827;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease-in-out;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.dark .doc-page-canvas, html.dark .doc-page-canvas {
+  background: #1e293b;
+  color: #f8fafc;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+}
+
+.tiptap-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.ProseMirror,
+.tiptap-editor,
+.doc-page-canvas {
+  outline: none;
+  flex: 1;
+  min-height: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.ProseMirror {
+  padding: 4rem 4.5rem;
+}
+
+.ProseMirror:focus,
+.tiptap-editor:focus {
+  outline: none;
+}
+
+.ProseMirror p,
+.tiptap-editor p {
+  margin: 0.6em 0;
+}
+
+.ProseMirror h1,
+.tiptap-editor h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 1.2em 0 0.5em;
+  line-height: 1.25;
+}
+
+.ProseMirror h2,
+.tiptap-editor h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.1em 0 0.4em;
+  line-height: 1.3;
+}
+
+.ProseMirror h3,
+.tiptap-editor h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0.9em 0 0.3em;
+}
+
+.ProseMirror ul:not([data-type="taskList"]),
+.tiptap-editor ul:not([data-type="taskList"]) {
+  list-style: disc;
+  padding-left: 1.75rem;
+  margin: 0.6em 0;
+}
+
+.ProseMirror ol,
+.tiptap-editor ol {
+  list-style: decimal;
+  padding-left: 1.75rem;
+  margin: 0.6em 0;
+}
+
+.ProseMirror li,
+.tiptap-editor li {
+  margin: 0.3em 0;
+}
+
+/* Checklist / TaskList */
+ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+  margin: 0.6em 0;
+}
+
+ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0.35rem 0;
+}
+
+ul[data-type="taskList"] li > label {
+  flex: 0 0 auto;
+  user-select: none;
+  cursor: pointer;
+  margin-top: 0.2rem;
+}
+
+ul[data-type="taskList"] li > label input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: #7c3aed;
+  width: 16px;
+  height: 16px;
+}
+
+ul[data-type="taskList"] li > div {
+  flex: 1 1 auto;
+}
+
+ul[data-type="taskList"] li[data-checked="true"] > div {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Blockquote */
+.ProseMirror blockquote,
+.tiptap-editor blockquote {
+  border-left: 4px solid #7c3aed;
+  padding-left: 1.25rem;
+  margin: 0.8em 0;
+  color: #4b5563;
+  font-style: italic;
+  background: rgba(124, 58, 237, 0.03);
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-radius: 0 8px 8px 0;
+}
+
+.dark .ProseMirror blockquote,
+.dark .tiptap-editor blockquote {
+  color: #94a3b8;
+  background: rgba(124, 58, 237, 0.08);
+}
+
+/* Code & Pre */
+.ProseMirror code,
+.tiptap-editor code {
+  background: #f1f5f9;
+  color: #db2777;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.3rem;
+  font-size: 0.88em;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.dark .ProseMirror code,
+.dark .tiptap-editor code {
+  background: #334155;
+  color: #f472b6;
+}
+
+.ProseMirror pre,
+.tiptap-editor pre {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 1rem 1.25rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 0.8em 0;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.ProseMirror pre code,
+.tiptap-editor pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+/* Tables - Google Docs Style */
+.ProseMirror table,
+.tiptap-editor table,
+.doc-page-canvas table {
+  border-collapse: collapse !important;
+  margin: 1.25rem 0 !important;
+  table-layout: fixed !important;
+  width: 100% !important;
+  border: 1.5px solid #1e293b !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  border-spacing: 0 !important;
+}
+
+.dark .ProseMirror table,
+.dark .tiptap-editor table,
+.dark .doc-page-canvas table {
+  border: 1.5px solid #94a3b8 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+.ProseMirror table td,
+.ProseMirror table th,
+.tiptap-editor table td,
+.tiptap-editor table th,
+.doc-page-canvas table td,
+.doc-page-canvas table th {
+  border: 1px solid #334155 !important;
+  box-sizing: border-box !important;
+  min-width: 50px !important;
+  padding: 8px 12px !important;
+  vertical-align: top !important;
+  position: relative !important;
+  line-height: 1.5 !important;
+}
+
+.dark .ProseMirror table td,
+.dark .ProseMirror table th,
+.dark .tiptap-editor table td,
+.dark .tiptap-editor table th,
+.dark .doc-page-canvas table td,
+.dark .doc-page-canvas table th {
+  border: 1px solid #64748b !important;
+}
+
+.ProseMirror table th,
+.tiptap-editor table th,
+.doc-page-canvas table th {
+  background-color: #f1f5f9 !important;
+  font-weight: 700 !important;
+  text-align: left !important;
+  color: #0f172a !important;
+  border-bottom: 2px solid #1e293b !important;
+}
+
+.dark .ProseMirror table th,
+.dark .tiptap-editor table th,
+.dark .doc-page-canvas table th {
+  background-color: #334155 !important;
+  color: #f8fafc !important;
+  border-bottom: 2px solid #94a3b8 !important;
+}
+
+.ProseMirror table .selectedCell:after,
+.tiptap-editor table .selectedCell:after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  left: 0; right: 0; top: 0; bottom: 0;
+  background: rgba(59, 130, 246, 0.2) !important;
+  border: 2px solid #2563eb !important;
+  pointer-events: none;
+}
+
+.ProseMirror table td:focus,
+.ProseMirror table th:focus,
+.tiptap-editor table td:focus,
+.tiptap-editor table th:focus {
+  outline: 2px solid #2563eb !important;
+  outline-offset: -2px !important;
+}
+
+.ProseMirror .column-resize-handle,
+.tiptap-editor .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background-color: #3b82f6;
+  pointer-events: none;
+}
+
+/* Links */
+.tiptap-editor .ProseMirror a {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.dark .tiptap-editor .ProseMirror a {
+  color: #60a5fa;
+}
+
+/* Images */
+.tiptap-editor .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Smart chips & elements */
+.smart-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin: 0 3px;
+  border: 1px solid transparent;
+  vertical-align: middle;
+}
+
+.callout-box {
+  border-left: 4px solid #7c3aed;
+  background: #f5f3ff;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.dark .callout-box {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: #8b5cf6;
+}
+
+.signature-box {
+  display: inline-block;
+  border-bottom: 2px dashed #94a3b8;
+  padding: 6px 18px;
+  font-family: 'Dancing Script', cursive, sans-serif;
+  font-size: 1.6rem;
+  color: #1e40af;
+  background: rgba(239, 246, 255, 0.6);
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+.dark .signature-box {
+  color: #93c5fd;
+  background: rgba(30, 58, 138, 0.3);
+  border-color: #64748b;
+}
+
+.formula-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: #f8fafc;
+  border-radius: 6px;
+  font-family: 'Cambria Math', 'KaTeX_Main', serif;
+  font-style: italic;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  margin: 4px 0;
+}
+
+.dark .formula-box {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+.comment-highlight {
+  background-color: rgba(254, 240, 138, 0.6);
+  border-bottom: 2px solid #eab308;
+  cursor: pointer;
+}
+
+.dark .comment-highlight {
+  background-color: rgba(161, 98, 7, 0.4);
+  border-bottom-color: #facc15;
+}
+
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9ca3af;
+  pointer-events: none;
+  height: 0;
+}
+
+/* Calendar */
+.calendar-day {
+  position: relative;
+  padding: 4px;
+  min-height: 80px;
+  border: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.dark .calendar-day {
+  border-color: #374151;
+}
+
+.calendar-day:hover {
+  background-color: #f9fafb;
+}
+
+.dark .calendar-day:hover {
+  background-color: rgba(31,41,55,0.5);
+}
+
+.calendar-day.today {
+  background-color: #f5f3ff;
+}
+
+.dark .calendar-day.today {
+  background-color: rgba(109,40,217,0.1);
+}
+
+.calendar-day.other-month {
+  opacity: 0.35;
+}
+
+/* =========================================================================
+   PAGE BREAK & MULTI-PAGE SHEETS STYLING (Authentic Google Docs Style)
+   ========================================================================= */
+
+.doc-page-canvas {
+  counter-reset: page-count 1;
+  background-color: #ffffff !important;
+  border-radius: 2px !important;
+  border: 1px solid #dadce0 !important;
+  box-shadow: 0 1px 3px 1px rgba(60, 64, 67, 0.15), 0 1px 2px 0 rgba(60, 64, 67, 0.28) !important;
+  box-sizing: border-box !important;
+}
+
+.dark .doc-page-canvas {
+  background-color: #1a2230 !important;
+  border-color: #2b3544 !important;
+  box-shadow: 0 1px 3px 1px rgba(0, 0, 0, 0.5), 0 1px 2px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Page Break Divider (The physical visual gap between paper sheets ala Google Docs - 0.1cm / 4px gap) */
+.page-break-divider {
+  position: relative !important;
+  display: block !important;
+  margin-top: 18px !important;
+  margin-bottom: 18px !important;
+  margin-left: -72px !important;
+  margin-right: -72px !important;
+  height: 4px !important; /* 0.1 cm (kira-kira 3.8px ~ 4px) */
+  background-color: #cbd5e1 !important; /* Visual page split line */
+  border-top: 1px solid #94a3b8 !important;
+  border-bottom: 1px solid #94a3b8 !important;
+  box-shadow: 
+    0 -1px 2px rgba(60, 64, 67, 0.12),
+    0 1px 2px rgba(60, 64, 67, 0.12) !important;
+  user-select: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dark .page-break-divider {
+  background-color: #0e131b !important;
+  border-top-color: #334155 !important;
+  border-bottom-color: #334155 !important;
+  box-shadow: 
+    0 -1px 2px rgba(0, 0, 0, 0.5),
+    0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.page-break-divider:hover {
+  background-color: #94a3b8 !important;
+}
+
+.dark .page-break-divider:hover {
+  background-color: #1e293b !important;
+}
+
+.page-break-divider.ProseMirror-selectednode {
+  outline: 2px solid #7c3aed !important;
+  outline-offset: 1px;
+}
+
+/* Hide any remaining badge if present */
+.page-break-badge,
+.page-break-counter {
+  display: none !important;
+}
+
+/* Spacing for content immediately following page break */
+.page-break-divider + * {
+  margin-top: 18px !important;
+}
+
+/* =========================================================================
+   PRINT STYLING (Google Docs / MS Word High-Fidelity Printing)
+   Only print the document paper canvas (.doc-page-canvas), hide everything else.
+   ========================================================================= */
+@media print {
+  /* Hide the entire web application shell */
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Hide app layout, navigation, sidebars, headers, dialogs, buttons */
+  aside,
+  nav,
+  header,
+  .btn-primary,
+  .btn-secondary,
+  input,
+  select,
+  button,
+  .no-print,
+  [role="dialog"] {
+    display: none !important;
+  }
+
+  /* Reset all layout containers so there is zero offset from top */
+  #root,
+  .min-h-screen,
+  .h-screen,
+  main,
+  .overflow-hidden,
+  .overflow-y-auto,
+  .overflow-auto,
+  .flex-1 {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    position: static !important;
+    transform: none !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide everything inside body by default */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Explicitly make .doc-page-canvas and its children visible */
+  .doc-page-canvas,
+  .doc-page-canvas * {
+    visibility: visible !important;
+  }
+
+  /* Reset the document canvas into a clean printable page starting at the very top */
+  .doc-page-canvas {
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    transform: none !important;
+    display: block !important;
+  }
+
+  /* Remove any canvas/editor padding that pushes text down on print */
+  .doc-page-canvas .ProseMirror,
+  .ProseMirror {
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: auto !important;
+    height: auto !important;
+  }
+
+  /* Remove top margin of the very first element (heading/title) */
+  .doc-page-canvas .ProseMirror > *:first-child,
+  .ProseMirror > *:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* Page break handling across printed pages */
+  .page-break-divider {
+    visibility: hidden !important;
+    display: block !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* Table Print Fixes: ensure table borders, headers and backgrounds render flawlessly */
+  table {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    page-break-inside: auto !important;
+    width: 100% !important;
+    margin: 1.25rem 0 !important;
+    border: 1.5px solid #1e293b !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+    border-top: 1.5px solid #1e293b !important;
+    border-bottom: 2px solid #1e293b !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+
+  thead tr {
+    page-break-before: avoid !important;
+  }
+
+  th, td {
+    border: 1px solid #334155 !important;
+    padding: 8px 12px !important;
+    text-align: left !important;
+    vertical-align: top !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  th {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    border-top: 1.5px solid #1e293b !important;
+    border-bottom: 2px solid #1e293b !important;
+  }
+
+  th p, td p {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.4 !important;
+  }
+
+  tbody tr:first-child td {
+    border-top: 1px solid #334155 !important;
+  }
+
+  @page {
+    margin: 15mm 15mm 15mm 15mm;
+    size: auto;
+  }
+}
+
