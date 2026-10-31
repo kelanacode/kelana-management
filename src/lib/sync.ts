@@ -48,6 +48,18 @@ const FLUSH_DELAY_MS = 400;
 const ECHO_IGNORE_MS = 4000;
 const PAGE_SIZE = 1000;
 
+// Urutan item di store untuk tabel yang tampilannya bergantung pada urutan.
+// Tabel lain: item terbaru di depan.
+const SORTERS: Record<string, (a: Item, b: Item) => number> = {
+  // Chat ditampilkan kronologis (lama -> baru), pesan baru di bawah
+  chat_messages: (a, b) => String(a.timestamp ?? '').localeCompare(String(b.timestamp ?? '')),
+};
+
+const ordered = (table: string, list: Item[]) => {
+  const sorter = SORTERS[table];
+  return sorter ? [...list].sort(sorter) : list;
+};
+
 // ---------------- Konversi baris <-> objek ----------------
 
 export function toRow(item: Record<string, any>, columns: ColumnMap, withId = true): Record<string, any> {
@@ -176,7 +188,7 @@ function handleRealtime(ts: TableState, payload: any) {
     const idx = list.findIndex((i) => i.id === id);
     next = idx === -1 ? [item, ...list] : list.map((i) => (i.id === id ? { ...i, ...item } : i));
   }
-  setFromRemote(ts.store, { [ts.spec.key]: next });
+  setFromRemote(ts.store, { [ts.spec.key]: ordered(ts.spec.table, next) });
 }
 
 // ---------------- API publik ----------------
@@ -199,7 +211,9 @@ export async function startSync() {
   results.forEach((res, i) => {
     const ts = tables[i];
     if (res.status === 'fulfilled') {
-      setFromRemote(ts.store, { [ts.spec.key]: res.value.map((r) => fromRow(r, ts.spec.columns)) });
+      setFromRemote(ts.store, {
+        [ts.spec.key]: ordered(ts.spec.table, res.value.map((r) => fromRow(r, ts.spec.columns))),
+      });
     } else {
       reportError(`muat ${ts.spec.table}`, res.reason);
     }
@@ -219,7 +233,9 @@ export async function startSync() {
     );
   }
 
-  // 3. Terima perubahan dari pengguna lain
+  // 3. Terima perubahan dari pengguna lain (WebSocket memakai token login agar lolos RLS)
+  const { data: auth } = await supabase.auth.getSession();
+  if (auth.session) await supabase.realtime.setAuth(auth.session.access_token);
   channel = supabase.channel('kelana-data');
   for (const ts of tables) {
     channel.on('postgres_changes', { event: '*', schema: 'public', table: ts.spec.table }, (payload) =>

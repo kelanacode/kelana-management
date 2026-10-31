@@ -49,16 +49,19 @@ export const TeamChatPopup: React.FC = () => {
   // Filter pesan sesuai channel yang sedang dibuka
   // 1. Jika activeChatTarget === 'all': pesan umum
   // 2. Jika activeChatTarget === userId: pesan antara currentUser dan userId tersebut
-  const displayedMessages = messages.filter((msg) => {
-    if (activeChatTarget === 'all') {
-      return !msg.recipientId || msg.recipientId === 'all';
-    } else {
-      // Personal chat (Direct Message)
-      const isSentByMeToPartner = msg.senderId === currentUserId && msg.recipientId === activeChatTarget;
-      const isSentByPartnerToMe = msg.senderId === activeChatTarget && msg.recipientId === currentUserId;
-      return isSentByMeToPartner || isSentByPartnerToMe;
-    }
-  });
+  const displayedMessages = messages
+    .filter((msg) => {
+      if (activeChatTarget === 'all') {
+        return !msg.recipientId || msg.recipientId === 'all';
+      } else {
+        // Personal chat (Direct Message)
+        const isSentByMeToPartner = msg.senderId === currentUserId && msg.recipientId === activeChatTarget;
+        const isSentByPartnerToMe = msg.senderId === activeChatTarget && msg.recipientId === currentUserId;
+        return isSentByMeToPartner || isSentByPartnerToMe;
+      }
+    })
+    // Kronologis: pesan terbaru selalu di bawah
+    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
   // Auto-scroll ke bawah saat ada pesan baru atau saat chat dibuka, dan tandai sudah dibaca untuk akun ini
   useEffect(() => {
