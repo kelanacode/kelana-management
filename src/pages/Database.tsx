@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Plus, Trash2, ChevronDown, MoreHorizontal,
   Table as TableIcon, LayoutGrid, Database as DatabaseIcon, Edit3, X, Check,
-  FileText, FileSpreadsheet, ExternalLink, Download, Copy, RefreshCw, Sparkles,
+  FileText, FileSpreadsheet, ExternalLink, RefreshCw, Sparkles,
   CheckCircle2, Filter, FolderOpen, Tag, Link2, Eye, Globe
 } from 'lucide-react';
 import { useDatabaseStore } from '../stores/databaseStore';
@@ -11,7 +11,6 @@ import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 import { DocumentDetailView } from '../components/database/DocumentDetailView';
 import { GoogleIntegrationModal } from '../components/database/GoogleIntegrationModal';
-import { downloadCSV, copyForGoogleSheets } from '../utils/databaseIntegration';
 import { useAuthStore } from '../stores/authStore';
 
 const FIELD_TYPE_LABELS: Record<FieldType, string> = {
@@ -157,7 +156,6 @@ export const DatabasePage: React.FC = () => {
   const [newDocGDocsUrl, setNewDocGDocsUrl] = useState('');
 
   const [showGoogleModal, setShowGoogleModal] = useState(false);
-  const [copiedSheetsToast, setCopiedSheetsToast] = useState(false);
   const [showEmbeddedSheets, setShowEmbeddedSheets] = useState(true);
 
   // Helper untuk mengubah Google Docs/Sheets URL ke format embed iframe yang bisa langsung diedit
@@ -247,15 +245,6 @@ export const DatabasePage: React.FC = () => {
     setNewFieldName('');
     setNewFieldType('text');
     setShowAddField(false);
-  };
-
-  const handleCopySheetsQuick = async () => {
-    if (!currentTable) return;
-    const ok = await copyForGoogleSheets(currentTable);
-    if (ok) {
-      setCopiedSheetsToast(true);
-      setTimeout(() => setCopiedSheetsToast(false), 2000);
-    }
   };
 
   const renderCell = (field: DatabaseField, row: any) => {
@@ -563,26 +552,6 @@ export const DatabasePage: React.FC = () => {
                       <span>{showEmbeddedSheets ? 'Tutup Live Sheets' : 'Buka Live Sheets'}</span>
                     </button>
                   )}
-
-                  <button
-                    type="button"
-                    onClick={handleCopySheetsQuick}
-                    className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    title="Salin data tabel agar dapat langsung di-paste ke Google Sheets"
-                  >
-                    {copiedSheetsToast ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
-                    <span>{copiedSheetsToast ? 'Tersalin!' : 'Salin untuk Sheets'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => downloadCSV(currentTable)}
-                    className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    title="Ekspor file CSV untuk Google Sheets"
-                  >
-                    <Download size={13} />
-                    <span>Ekspor .CSV</span>
-                  </button>
 
                   {/* Table/Gallery toggle */}
                   <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 border border-gray-200 dark:border-gray-700">

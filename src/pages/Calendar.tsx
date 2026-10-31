@@ -54,7 +54,6 @@ export const CalendarPage: React.FC = () => {
   const { cards, boards } = useBoardStore();
   const { session } = useAuthStore();
   const currentUser = session?.user;
-  const userGCalEmail = currentUser?.googleCalendarEmail || currentUser?.email || '';
   const {
     reminders,
     addReminder,
@@ -196,17 +195,6 @@ export const CalendarPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <a
-              href={`https://calendar.google.com/calendar/u/${userGCalEmail}`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-              title="Buka Google Calendar Akun Pribadi Pegawai"
-            >
-              <CalIcon size={13} className="text-blue-600" />
-              Google Calendar Pribadi
-            </a>
-
             <button
               onClick={() => triggerTestAlert()}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 rounded-lg text-xs font-semibold transition-colors"
