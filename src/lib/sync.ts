@@ -20,7 +20,6 @@ import { useNotesStore } from '../stores/notesStore';
 import { useProcureToPayStore } from '../stores/procureToPayStore';
 import { useReminderStore } from '../stores/reminderStore';
 import { useTaskStore } from '../stores/taskStore';
-import { useTeamChatStore } from '../stores/teamChatStore';
 import { useWikiStore } from '../stores/wikiStore';
 
 type AnyStore = UseBoundStore<StoreApi<any>>;
@@ -38,7 +37,6 @@ const STORES: Record<string, AnyStore> = {
   procureToPay: useProcureToPayStore,
   reminder: useReminderStore,
   task: useTaskStore,
-  teamChat: useTeamChatStore,
   wiki: useWikiStore,
 };
 
@@ -50,10 +48,7 @@ const PAGE_SIZE = 1000;
 
 // Urutan item di store untuk tabel yang tampilannya bergantung pada urutan.
 // Tabel lain: item terbaru di depan.
-const SORTERS: Record<string, (a: Item, b: Item) => number> = {
-  // Chat ditampilkan kronologis (lama -> baru), pesan baru di bawah
-  chat_messages: (a, b) => String(a.timestamp ?? '').localeCompare(String(b.timestamp ?? '')),
-};
+const SORTERS: Record<string, (a: Item, b: Item) => number> = {};
 
 const ordered = (table: string, list: Item[]) => {
   const sorter = SORTERS[table];
@@ -62,9 +57,7 @@ const ordered = (table: string, list: Item[]) => {
 
 // Field yang nilainya ditentukan server (trigger). Setelah disimpan, nilai server
 // disalin kembali ke store agar tampilan pengirim sama dengan pengguna lain.
-const SERVER_FIELDS: Record<string, string[]> = {
-  chat_messages: ['timestamp'],
-};
+const SERVER_FIELDS: Record<string, string[]> = {};
 
 // ---------------- Konversi baris <-> objek ----------------
 

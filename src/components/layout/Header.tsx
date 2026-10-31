@@ -4,7 +4,7 @@ import { Sun, Moon, Bell, Search, Menu } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { useTaskStore } from '../../stores/taskStore';
 import { useNotesStore, checkNoteAccess, isNoteReadByUser } from '../../stores/notesStore';
-import { useTeamChatStore, getUnreadChatCountForUser } from '../../stores/teamChatStore';
+import { useChatStore, totalUnread } from '../../stores/chatStore';
 import { checkTaskAccess } from '../../utils/taskAccess';
 import { useAuthStore } from '../../stores/authStore';
 import { GlobalSearchModal } from './GlobalSearchModal';
@@ -41,7 +41,7 @@ export const Header: React.FC = () => {
 
   const { notes } = useNotesStore();
   const { tasks } = useTaskStore();
-  const { messages: chatMessages } = useTeamChatStore();
+  const chatState = useChatStore();
 
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -84,7 +84,7 @@ export const Header: React.FC = () => {
     : 0;
 
   // 3. Pesan chat baru yang belum dibaca khusus untuk akun user ini (Personal maupun Tim)
-  const unreadChatCount = getUnreadChatCountForUser(chatMessages, currentUserId || '');
+  const unreadChatCount = totalUnread(chatState);
 
   const totalUnreadNotifications = unreadNotesCount + unreadEmployeeTasksCount + submittedTasksForReviewCount + unreadChatCount;
 

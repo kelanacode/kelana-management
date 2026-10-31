@@ -748,25 +748,6 @@ drop policy if exists "members_all" on public.drive_items;
 create policy "members_all" on public.drive_items for all to authenticated
   using (public.is_active_member()) with check (public.is_active_member());
 
-create table if not exists public.chat_messages (
-  id text primary key,
-  sender_id text,
-  sender_name text,
-  sender_avatar text,
-  sender_color text,
-  sender_role text,
-  content text,
-  "timestamp" timestamptz,
-  recipient_id text,
-  recipient_name text,
-  read_by_user_ids jsonb,
-  inserted_at timestamptz not null default now()
-);
-alter table public.chat_messages enable row level security;
-drop policy if exists "members_all" on public.chat_messages;
-create policy "members_all" on public.chat_messages for all to authenticated
-  using (public.is_active_member()) with check (public.is_active_member());
-
 create table if not exists public.activities (
   id text primary key,
   member_id text,
@@ -784,7 +765,7 @@ create policy "members_all" on public.activities for all to authenticated
 do $$
 declare t text;
 begin
-  foreach t in array array['profiles', 'bank_accounts', 'journal_entries', 'purchase_requisitions', 'purchase_orders', 'sales_orders', 'inventory_items', 'fixed_assets', 'payroll_records', 'department_budgets', 'expense_claims', 'budget_requisitions', 'p2p_cases', 'company_tasks', 'attendance_records', 'attendance_corrections', 'event_reminders', 'boards', 'board_columns', 'board_cards', 'notes', 'wiki_pages', 'workspace_tables', 'workspace_documents', 'drive_items', 'chat_messages', 'activities'] loop
+  foreach t in array array['profiles', 'bank_accounts', 'journal_entries', 'purchase_requisitions', 'purchase_orders', 'sales_orders', 'inventory_items', 'fixed_assets', 'payroll_records', 'department_budgets', 'expense_claims', 'budget_requisitions', 'p2p_cases', 'company_tasks', 'attendance_records', 'attendance_corrections', 'event_reminders', 'boards', 'board_columns', 'board_cards', 'notes', 'wiki_pages', 'workspace_tables', 'workspace_documents', 'drive_items', 'activities'] loop
     if not exists (
       select 1 from pg_publication_tables
       where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t

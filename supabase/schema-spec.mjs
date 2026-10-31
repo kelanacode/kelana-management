@@ -112,10 +112,7 @@ export const TABLES = [
   },
 
   // ---------- Tim ----------
-  {
-    table: 'chat_messages', store: 'teamChat', key: 'messages',
-    fields: ['senderId', 'senderName', 'senderAvatar', 'senderColor', 'senderRole', 'content', 'timestamp:ts', 'recipientId', 'recipientName', 'readByUserIds:j'],
-  },
+  // Chat ada di migrasi tersendiri (chat_rooms, chat_room_members, chat_room_messages).
   {
     table: 'activities', store: 'app', key: 'activities',
     fields: ['memberId', 'action', 'target', 'timestamp:ts'],

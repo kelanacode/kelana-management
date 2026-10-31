@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useTaskStore } from '../../stores/taskStore';
 import { useNotesStore, checkNoteAccess, isNoteReadByUser } from '../../stores/notesStore';
-import { useTeamChatStore, isMessageForUser } from '../../stores/teamChatStore';
+import { useChatStore, lastReadOf } from '../../stores/chatStore';
 import { checkTaskAccess } from '../../utils/taskAccess';
 import { useBudgetRequisitionStore } from '../../stores/budgetRequisitionStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -27,7 +27,8 @@ export const NotificationPopover: React.FC<NotificationPopoverProps> = ({ isOpen
   const { tasks } = useTaskStore();
   const { notes, markNoteAsRead, selectNote } = useNotesStore();
   const { requisitions } = useBudgetRequisitionStore();
-  const { messages: chatMessages, openChat } = useTeamChatStore();
+  const chatState = useChatStore();
+  const { users } = useAuthStore();
 
   if (!isOpen) return null;
 
@@ -132,21 +133,24 @@ export const NotificationPopover: React.FC<NotificationPopoverProps> = ({ isOpen
     });
   });
 
-  // 4. Notifikasi Pesan Chat Masuk (Untuk Akun yang Dituju / Tim)
-  chatMessages
-    .filter((m) => m.senderId !== currentUserId && isMessageForUser(m, currentUserId || ''))
+  // 4. Notifikasi Pesan Chat Masuk (channel & pesan langsung yang bisa diakses user ini)
+  chatState.messages
+    .filter((m) => m.senderId !== currentUserId && !m.deletedAt)
     .slice(-5)
     .forEach((m) => {
-      const isUnread = !m.readByUserIds?.includes(currentUserId || '');
+      const room = chatState.rooms.find((r) => r.id === m.roomId);
+      const senderName = users.find((u) => u.id === m.senderId)?.name ?? 'Rekan kerja';
+      const isUnread =
+        new Date(m.createdAt).getTime() > new Date(lastReadOf(chatState.members, m.roomId, chatState.myId)).getTime();
       notifications.push({
         id: 'chat-notif-' + m.id,
-        title: m.recipientId === 'all' || !m.recipientId ? `💬 Chat Tim: ${m.senderName}` : `💬 Pesan Pribadi: ${m.senderName}`,
-        description: m.content,
-        time: m.timestamp,
+        title: room?.type === 'channel' ? `💬 #${room.name}: ${senderName}` : `💬 Pesan Pribadi: ${senderName}`,
+        description: m.text ?? (m.fileName ? `📎 ${m.fileName}` : ''),
+        time: m.createdAt,
         type: 'chat',
         isUnread,
         onClick: () => {
-          openChat(m.recipientId === 'all' || !m.recipientId ? 'all' : m.senderId);
+          chatState.open(m.roomId);
           onClose();
         },
       });

@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { PROFILE_COLUMNS } from '../lib/dbSchema';
 import { fromRow, toRow, startSync, stopSync } from '../lib/sync';
 import { useAppStore } from './appStore';
+import { useChatStore } from './chatStore';
 
 export interface InvitationInfo {
   email: string;
@@ -147,7 +148,7 @@ export const useAuthStore = create<AuthStore>()(
         const sbSession = data.session;
         if (!sbSession) {
           set({ session: null });
-          await stopSync();
+          await Promise.all([stopSync(), useChatStore.getState().stop()]);
           return;
         }
         const { data: profile } = await supabase.from('profiles').select('*').eq('id', sbSession.user.id).maybeSingle();
@@ -169,6 +170,7 @@ export const useAuthStore = create<AuthStore>()(
         });
         await get().refreshUsers();
         void startSync();
+        void useChatStore.getState().start(sbSession.user.id);
       },
 
       login: async (identifier, password, rememberMe = false) => {
@@ -232,6 +234,7 @@ export const useAuthStore = create<AuthStore>()(
         await supabase.from('profiles').update({ last_login: new Date().toISOString() }).eq('id', user.id);
         await get().refreshUsers();
         void startSync();
+        void useChatStore.getState().start(user.id);
         return { success: true };
       },
 
@@ -248,7 +251,7 @@ export const useAuthStore = create<AuthStore>()(
       logout: () => {
         set({ session: null, users: [] });
         twoFactorPassedFor = null;
-        void stopSync().then(() => supabase.auth.signOut());
+        void Promise.all([stopSync(), useChatStore.getState().stop()]).then(() => supabase.auth.signOut());
       },
 
       checkSessionValid: () => {
