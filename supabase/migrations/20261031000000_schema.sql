@@ -668,24 +668,6 @@ drop policy if exists "members_all" on public.notes;
 create policy "members_all" on public.notes for all to authenticated
   using (public.is_active_member()) with check (public.is_active_member());
 
-create table if not exists public.wiki_pages (
-  id text primary key,
-  title text,
-  content text,
-  emoji text,
-  parent_id text,
-  children jsonb,
-  paper_size text,
-  comments jsonb,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  inserted_at timestamptz not null default now()
-);
-alter table public.wiki_pages enable row level security;
-drop policy if exists "members_all" on public.wiki_pages;
-create policy "members_all" on public.wiki_pages for all to authenticated
-  using (public.is_active_member()) with check (public.is_active_member());
-
 create table if not exists public.workspace_tables (
   id text primary key,
   "name" text,
@@ -765,7 +747,7 @@ create policy "members_all" on public.activities for all to authenticated
 do $$
 declare t text;
 begin
-  foreach t in array array['profiles', 'bank_accounts', 'journal_entries', 'purchase_requisitions', 'purchase_orders', 'sales_orders', 'inventory_items', 'fixed_assets', 'payroll_records', 'department_budgets', 'expense_claims', 'budget_requisitions', 'p2p_cases', 'company_tasks', 'attendance_records', 'attendance_corrections', 'event_reminders', 'boards', 'board_columns', 'board_cards', 'notes', 'wiki_pages', 'workspace_tables', 'workspace_documents', 'drive_items', 'activities'] loop
+  foreach t in array array['profiles', 'bank_accounts', 'journal_entries', 'purchase_requisitions', 'purchase_orders', 'sales_orders', 'inventory_items', 'fixed_assets', 'payroll_records', 'department_budgets', 'expense_claims', 'budget_requisitions', 'p2p_cases', 'company_tasks', 'attendance_records', 'attendance_corrections', 'event_reminders', 'boards', 'board_columns', 'board_cards', 'notes', 'workspace_tables', 'workspace_documents', 'drive_items', 'activities'] loop
     if not exists (
       select 1 from pg_publication_tables
       where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t

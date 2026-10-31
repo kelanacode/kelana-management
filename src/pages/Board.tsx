@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   DndContext,
   DragEndEvent,
@@ -409,6 +409,11 @@ export const Board: React.FC = () => {
   const [showEmojiPickerBoardId, setShowEmojiPickerBoardId] = useState<string | null>(null);
 
   const currentBoard = boards.find((b) => b.id === selectedBoardId);
+
+  // Board terpilih sudah tidak ada (dihapus / data baru dimuat): pilih board pertama
+  useEffect(() => {
+    if (!currentBoard && boards.length > 0) selectBoard(boards[0].id);
+  }, [currentBoard, boards, selectBoard]);
   const boardColumns = columns
     .filter((c) => c.boardId === selectedBoardId)
     .sort((a, b) => a.order - b.order);
@@ -525,7 +530,7 @@ export const Board: React.FC = () => {
                     </div>
 
                     {/* Quick action buttons: Edit and Delete */}
-                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ml-1">
+                    <div className={`flex items-center gap-0.5 transition-opacity ml-1 ${board.id === selectedBoardId ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100'}`}>
                       <button
                         type="button"
                         onClick={(e) => {
@@ -539,7 +544,7 @@ export const Board: React.FC = () => {
                         <Edit2 size={12} />
                       </button>
 
-                      {boards.length > 1 && (
+                      {(
                         <button
                           type="button"
                           onClick={(e) => {
@@ -643,7 +648,7 @@ export const Board: React.FC = () => {
                 {cards.filter(c => c.boardId === selectedBoardId).length} kartu
               </span>
 
-              {boards.length > 1 && (
+              {(
                 <button
                   type="button"
                   onClick={() => {
@@ -661,7 +666,18 @@ export const Board: React.FC = () => {
           </div>
         )}
 
-        <div className="flex-1 overflow-x-auto overflow-y-hidden p-6">
+        {!currentBoard && (
+          <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center p-6">
+            <div className="text-4xl">📋</div>
+            <p className="font-semibold text-gray-800 dark:text-gray-100">Belum ada board</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Buat board untuk mulai mengelola proyek dan tugas tim.</p>
+            <button onClick={() => setAddingBoard(true)} className="btn-primary text-sm flex items-center gap-1.5">
+              <Plus size={14} /> Buat Board
+            </button>
+          </div>
+        )}
+
+        <div className={`flex-1 overflow-x-auto overflow-y-hidden p-6 ${currentBoard ? '' : 'hidden'}`}>
           <DndContext
             sensors={sensors}
             collisionDetection={closestCorners}

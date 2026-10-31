@@ -8,6 +8,8 @@ import { useAuthStore } from '../stores/authStore';
 import { useAttendanceStore } from '../stores/attendanceStore';
 import {
   DEFAULT_OFFICE,
+  isWithinAttendanceArea,
+  formatDistance,
   calculateDistanceInMeters,
   getServerTimestampWIB,
   checkAttendanceWindow,
@@ -40,7 +42,7 @@ export const EmployeeAttendanceTab: React.FC = () => {
   const windowCheck = checkAttendanceWindow(currentTime);
 
   // Form states
-  const [workType, setWorkType] = useState<AttendanceWorkType>('WFO');
+  const workType: AttendanceWorkType = 'WFO';
   const [clockInNotes, setClockInNotes] = useState('');
   const [clockOutNotes, setClockOutNotes] = useState('');
 
@@ -108,13 +110,12 @@ export const EmployeeAttendanceTab: React.FC = () => {
           DEFAULT_OFFICE.latitude,
           DEFAULT_OFFICE.longitude
         );
-        const inside = distance <= DEFAULT_OFFICE.radiusMeters;
-
         // Ambil alamat nama jalan/wilayah nyata perangkat & IP publik
         const [realAddress, networkInfo] = await Promise.all([
           reverseGeocodeCoordinates(lat, lon),
           getDeviceNetworkInfo(),
         ]);
+        const inside = isWithinAttendanceArea(distance, realAddress);
 
         setUserLocation({
           latitude: lat,
@@ -130,43 +131,16 @@ export const EmployeeAttendanceTab: React.FC = () => {
       async (err) => {
         console.warn('Geolocation permission error or unavailable:', err);
         const networkInfo = await getDeviceNetworkInfo();
-        
-        // Coba deteksi via IP Geo
-        try {
-          const res = await fetch('https://ipapi.co/json/');
-          const data = await res.json();
-          if (data && data.latitude && data.longitude) {
-            const distance = calculateDistanceInMeters(
-              data.latitude,
-              data.longitude,
-              DEFAULT_OFFICE.latitude,
-              DEFAULT_OFFICE.longitude
-            );
-            setUserLocation({
-              latitude: data.latitude,
-              longitude: data.longitude,
-              accuracy: 1000,
-              distanceFromOfficeMeters: distance,
-              isInsideOfficeGeofence: distance <= DEFAULT_OFFICE.radiusMeters,
-              address: `${data.city || 'Kota'}, ${data.region || 'Wilayah'}, ${data.country_name || 'Indonesia'}`,
-              ipAddress: data.ip || networkInfo.ip,
-            });
-            setDetectingLocation(false);
-            return;
-          }
-        } catch {
-          // Fallback
-        }
-
+        // Tanpa GPS, lokasi tidak bisa dipastikan berada di Cirebon -> absen tidak diizinkan
         setUserLocation({
-          latitude: DEFAULT_OFFICE.latitude,
-          longitude: DEFAULT_OFFICE.longitude,
+          latitude: 0,
+          longitude: 0,
           distanceFromOfficeMeters: 0,
-          isInsideOfficeGeofence: true,
-          address: 'Izin GPS ditolak atau tidak terdeteksi (Gunakan tombol Refresh GPS untuk izinkan)',
+          isInsideOfficeGeofence: false,
+          address: 'Lokasi GPS tidak terdeteksi',
           ipAddress: networkInfo.ip,
         });
-        setLocationError('Izin akses lokasi belum diberikan. Klik "Refresh GPS" dan pilih "Allow/Izinkan" pada browser.');
+        setLocationError('Izin akses lokasi belum diberikan. Klik "Refresh GPS" dan pilih "Allow/Izinkan" pada browser. Absensi membutuhkan GPS aktif.');
         setDetectingLocation(false);
       },
       { timeout: 10000, enableHighAccuracy: true, maximumAge: 0 }
@@ -176,6 +150,15 @@ export const EmployeeAttendanceTab: React.FC = () => {
   const handleStartClockIn = () => {
     if (!userLocation) {
       detectLocation();
+      setAlert({ type: 'error', message: 'Lokasi sedang dideteksi. Tunggu sebentar lalu coba lagi.' });
+      return;
+    }
+    if (!userLocation.isInsideOfficeGeofence) {
+      setAlert({
+        type: 'error',
+        message: `Absensi hanya dapat dilakukan di wilayah Cirebon. Lokasi terdeteksi: ${userLocation.address || 'tidak diketahui'}.`,
+      });
+      return;
     }
     setActiveAction('in');
     setShowWebcam(true);
@@ -191,6 +174,15 @@ export const EmployeeAttendanceTab: React.FC = () => {
     }
     if (!userLocation) {
       detectLocation();
+      setAlert({ type: 'error', message: 'Lokasi sedang dideteksi. Tunggu sebentar lalu coba lagi.' });
+      return;
+    }
+    if (!userLocation.isInsideOfficeGeofence) {
+      setAlert({
+        type: 'error',
+        message: `Absensi hanya dapat dilakukan di wilayah Cirebon. Lokasi terdeteksi: ${userLocation.address || 'tidak diketahui'}.`,
+      });
+      return;
     }
     setActiveAction('out');
     setShowWebcam(true);
@@ -202,14 +194,12 @@ export const EmployeeAttendanceTab: React.FC = () => {
     setLoading(true);
 
     const effectiveDate = getActiveDate();
-    const loc = userLocation || {
-      latitude: DEFAULT_OFFICE.latitude,
-      longitude: DEFAULT_OFFICE.longitude,
-      distanceFromOfficeMeters: 10,
-      isInsideOfficeGeofence: true,
-      address: 'Menara Sudirman Lt. 12',
-      ipAddress: '192.168.1.104',
-    };
+    if (!userLocation?.isInsideOfficeGeofence) {
+      setLoading(false);
+      setAlert({ type: 'error', message: 'Absensi hanya dapat dilakukan di wilayah Cirebon dengan GPS aktif.' });
+      return;
+    }
+    const loc = userLocation;
 
     if (activeAction === 'in' && user) {
       const res = await clockIn({
@@ -394,23 +384,6 @@ export const EmployeeAttendanceTab: React.FC = () => {
                 <span>Pencatatan Kehadiran Hari Ini</span>
               </h3>
 
-              {/* Work Type Toggle */}
-              <div className="flex items-center bg-gray-100 dark:bg-gray-800 p-1 rounded-xl text-xs font-semibold">
-                {(['WFO', 'WFH', 'Dinas Luar'] as AttendanceWorkType[]).map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => setWorkType(type)}
-                    className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                      workType === type
-                        ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-300 shadow-xs'
-                        : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Geolocation Status Box */}
@@ -437,7 +410,7 @@ export const EmployeeAttendanceTab: React.FC = () => {
                           : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
                       }`}
                     >
-                      {userLocation?.isInsideOfficeGeofence ? '✓ Dalam Radius Kantor' : '⚠️ Di Luar Radius'}
+                      {detectingLocation ? 'Mendeteksi...' : userLocation?.isInsideOfficeGeofence ? '✓ Dalam Wilayah Cirebon' : '⚠️ Di Luar Wilayah Cirebon'}
                     </span>
                   </div>
                   <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -446,7 +419,7 @@ export const EmployeeAttendanceTab: React.FC = () => {
                       : userLocation?.address || 'Lokasi terdeteksi'}
                   </p>
                   <p className="text-[11px] text-gray-400 mt-0.5">
-                    IP: {userLocation?.ipAddress || '192.168.1.1'} • Jarak: {userLocation?.distanceFromOfficeMeters ?? 0}m
+                    IP: {userLocation?.ipAddress || '-'} • Jarak ke pusat Kota Cirebon: {userLocation?.latitude ? formatDistance(userLocation.distanceFromOfficeMeters) : '-'}
                   </p>
                 </div>
               </div>

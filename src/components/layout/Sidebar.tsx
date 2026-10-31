@@ -5,7 +5,6 @@ import {
   FileText,
   Kanban,
   Database,
-  BookOpen,
   Calendar,
   Users,
   ChevronLeft,
@@ -33,7 +32,6 @@ const navItems = [
   { to: '/notes', icon: FileText, label: 'Notes' },
   { to: '/board', icon: Kanban, label: 'Kanban Board' },
   { to: '/database', icon: Database, label: 'Database' },
-  { to: '/wiki', icon: BookOpen, label: 'Wiki' },
   { to: '/calendar', icon: Calendar, label: 'Kalender' },
   { to: '/team', icon: Users, label: 'Tim' },
 ];
@@ -74,8 +72,7 @@ export const Sidebar: React.FC = () => {
     { to: '/notes', icon: FileText, label: 'Notes' },
     { to: '/board', icon: Kanban, label: 'Kanban Board' },
     { to: '/database', icon: Database, label: 'Database' },
-    { to: '/wiki', icon: BookOpen, label: 'Wiki' },
-    { to: '/calendar', icon: Calendar, label: 'Kalender' },
+      { to: '/calendar', icon: Calendar, label: 'Kalender' },
     { to: '/team', icon: Users, label: 'Tim' },
   ];
 

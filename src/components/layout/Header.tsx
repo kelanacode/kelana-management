@@ -16,7 +16,6 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
   '/notes': { title: 'Notes & Dokumen', subtitle: 'Tulis dan kelola catatan Anda' },
   '/board': { title: 'Kanban Board', subtitle: 'Kelola proyek dan tugas secara visual' },
   '/database': { title: 'Database', subtitle: 'Susun dan kelola data terstruktur' },
-  '/wiki': { title: 'Wiki & Knowledge Base', subtitle: 'Bangun perpustakaan pengetahuan tim' },
   '/calendar': { title: 'Kalender & Pengingat Acara', subtitle: 'Jadwal kegiatan divisi dan tenggat waktu tugas (WIB)' },
   '/team': { title: 'Tim & Kolaborasi', subtitle: 'Kelola anggota tim dan aktivitas' },
 };

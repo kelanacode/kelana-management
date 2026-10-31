@@ -7,7 +7,6 @@ import {
 import { useNotesStore, checkNoteAccess } from '../../stores/notesStore';
 import { useBoardStore } from '../../stores/boardStore';
 import { useDatabaseStore } from '../../stores/databaseStore';
-import { useWikiStore } from '../../stores/wikiStore';
 import { useTaskStore } from '../../stores/taskStore';
 import { useFinanceStore } from '../../stores/financeStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -16,7 +15,7 @@ interface SearchResultItem {
   id: string;
   title: string;
   subtitle: string;
-  category: 'Notes' | 'Board' | 'Database' | 'Wiki' | 'Taks' | 'Finance';
+  category: 'Notes' | 'Board' | 'Database' | 'Taks' | 'Finance';
   icon: any;
   link: string;
   onClick: () => void;
@@ -36,7 +35,6 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
   const { notes, selectNote } = useNotesStore();
   const { cards } = useBoardStore();
   const { tables } = useDatabaseStore();
-  const { pages, selectPage } = useWikiStore();
   const { tasks } = useTaskStore();
   const { departmentBudgets } = useFinanceStore();
   const { session } = useAuthStore();
@@ -111,26 +109,6 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
           link: '/tasks',
           onClick: () => {
             navigate('/tasks');
-            onClose();
-          },
-        });
-      });
-
-    // 4. Wiki Knowledge Base
-    pages
-      .filter((p) => p.title.toLowerCase().includes(q) || p.content?.toLowerCase().includes(q))
-      .slice(0, 3)
-      .forEach((p) => {
-        results.push({
-          id: 'wiki-' + p.id,
-          title: p.title,
-          subtitle: 'Halaman Wiki & SOP',
-          category: 'Wiki',
-          icon: BookOpen,
-          link: '/wiki',
-          onClick: () => {
-            selectPage(p.id);
-            navigate('/wiki');
             onClose();
           },
         });
@@ -213,7 +191,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
               setSelectedIndex(0);
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Cari catatan, tugas kanban, taks, wiki, database, atau anggaran..."
+            placeholder="Cari catatan, tugas kanban, taks, database, atau anggaran..."
             className="w-full bg-transparent border-0 outline-none text-sm text-gray-900 dark:text-white placeholder:text-gray-400"
           />
           {query ? (
@@ -242,11 +220,11 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
                   Pencarian Global Ruang Kelana
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  Ketik kata kunci untuk mencari di seluruh modul (Notes, Board, Taks, Wiki, Database, Anggaran).
+                  Ketik kata kunci untuk mencari di seluruh modul (Notes, Board, Taks, Database, Anggaran).
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-2 pt-2">
-                {['Notes', 'Kanban', 'Taks', 'Wiki', 'Anggaran', 'SOP'].map((chip) => (
+                {['Notes', 'Kanban', 'Taks', 'Anggaran', 'SOP'].map((chip) => (
                   <button
                     key={chip}
                     onClick={() => setQuery(chip)}

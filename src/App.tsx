@@ -5,7 +5,6 @@ import { Dashboard } from './pages/Dashboard';
 import { Notes } from './pages/Notes';
 import { Board } from './pages/Board';
 import { DatabasePage } from './pages/Database';
-import { Wiki } from './pages/Wiki';
 import { CalendarPage } from './pages/Calendar';
 import { Team } from './pages/Team';
 import { AttendancePage } from './pages/Attendance';
@@ -37,7 +36,6 @@ function App() {
                   <Route path="/notes" element={<Notes />} />
                   <Route path="/board" element={<Board />} />
                   <Route path="/database" element={<DatabasePage />} />
-                  <Route path="/wiki" element={<Wiki />} />
                   <Route path="/calendar" element={<CalendarPage />} />
                   <Route path="/reminders" element={<Navigate to="/calendar" replace />} />
                   <Route path="/team" element={<Team />} />

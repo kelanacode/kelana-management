@@ -20,7 +20,6 @@ import { useNotesStore } from '../stores/notesStore';
 import { useProcureToPayStore } from '../stores/procureToPayStore';
 import { useReminderStore } from '../stores/reminderStore';
 import { useTaskStore } from '../stores/taskStore';
-import { useWikiStore } from '../stores/wikiStore';
 
 type AnyStore = UseBoundStore<StoreApi<any>>;
 type Item = { id: string } & Record<string, any>;
@@ -37,7 +36,6 @@ const STORES: Record<string, AnyStore> = {
   procureToPay: useProcureToPayStore,
   reminder: useReminderStore,
   task: useTaskStore,
-  wiki: useWikiStore,
 };
 
 const FLUSH_DELAY_MS = 400;

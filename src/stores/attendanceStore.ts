@@ -102,13 +102,15 @@ export const useAttendanceStore = create<AttendanceStore>()(
           };
         }
 
-        // 2. Cek Geofencing jika WFO
+        // 2. Absensi hanya dari wilayah Cirebon
+        if (!location.isInsideOfficeGeofence) {
+          return {
+            success: false,
+            message: `Absen ditolak: lokasi Anda di luar wilayah ${DEFAULT_OFFICE.name}.`,
+          };
+        }
         let hasAnomaly = false;
         let anomalyReason = '';
-        if (workType === 'WFO' && !location.isInsideOfficeGeofence) {
-          hasAnomaly = true;
-          anomalyReason = `Lokasi di luar radius kantor (${location.distanceFromOfficeMeters} meter)`;
-        }
 
         // 3. Tentukan status kehadiran (Tepat Waktu vs Terlambat)
         const isLate = windowCheck.isClockInLate;
@@ -150,6 +152,12 @@ export const useAttendanceStore = create<AttendanceStore>()(
       },
 
       clockOut: async ({ userId, notes, location, selfiePhoto, customTimeOverride }) => {
+        if (!location.isInsideOfficeGeofence) {
+          return {
+            success: false,
+            message: `Absen pulang ditolak: lokasi Anda di luar wilayah ${DEFAULT_OFFICE.name}.`,
+          };
+        }
         const { records } = get();
         const now = customTimeOverride || new Date();
         const { iso, timeStr, dateStr } = getServerTimestampWIB(now);

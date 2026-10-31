@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  FileText, Kanban, Database, BookOpen,
+  FileText, Kanban, Database,
   Plus, TrendingUp, Clock, AlertCircle,
   ArrowRight, Users, BellRing, MapPin, Building2,
   PieChart, DollarSign, ShieldAlert
@@ -15,7 +15,6 @@ import {
 } from '../stores/notesStore';
 import { useBoardStore } from '../stores/boardStore';
 import { useDatabaseStore } from '../stores/databaseStore';
-import { useWikiStore } from '../stores/wikiStore';
 import { useAppStore } from '../stores/appStore';
 import { useReminderStore } from '../stores/reminderStore';
 import { useFinanceStore } from '../stores/financeStore';
@@ -32,7 +31,6 @@ export const Dashboard: React.FC = () => {
   const { notes, addNote, markNoteAsRead, selectNote } = useNotesStore();
   const { boards, cards } = useBoardStore();
   const { tables } = useDatabaseStore();
-  const { pages } = useWikiStore();
   const { reminders } = useReminderStore();
   const { settings, members, activities } = useAppStore();
   const { departmentBudgets } = useFinanceStore();
@@ -104,7 +102,6 @@ export const Dashboard: React.FC = () => {
     { label: 'Proyek Aktif', value: boards.length, icon: Kanban, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20', onClick: () => navigate('/board') },
     { label: 'Kalender & Acara', value: reminders.length, icon: BellRing, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20', onClick: () => navigate('/calendar') },
     { label: 'Database', value: tables.length, icon: Database, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20', onClick: () => navigate('/database') },
-    { label: 'Halaman Wiki', value: pages.length, icon: BookOpen, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20', onClick: () => navigate('/wiki') },
   ];
 
   const memberMap = Object.fromEntries(members.map((m) => [m.id, m]));
@@ -145,7 +142,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(({ label, value, icon: Icon, color, bg, onClick }) => (
           <button key={label} onClick={onClick} className="card p-4 text-left hover:shadow-md transition-shadow group">
             <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>

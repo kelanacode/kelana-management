@@ -348,7 +348,9 @@ export const HRAttendanceDashboard: React.FC = () => {
                           <Eye size={12} /> Lihat Foto
                         </button>
                       ) : (
-                        <span className="text-gray-400 text-[11px]">-</span>
+                        <span className="text-gray-400 text-[11px]" title="Foto absensi dihapus otomatis setelah 7 hari">
+                          {r.clockInTime && Date.now() - new Date(r.createdAt).getTime() > 7 * 24 * 3600 * 1000 ? 'Dihapus (>7 hari)' : '-'}
+                        </span>
                       )}
                     </td>
                     <td className="p-3 max-w-xs truncate text-gray-500">

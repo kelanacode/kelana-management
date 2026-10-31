@@ -94,10 +94,6 @@ export const TABLES = [
     fields: ['title', 'content', 'tags:j', 'comments:j', 'paperSize', 'createdAt:ts', 'updatedAt:ts', 'emoji', 'authorId', 'authorName', 'authorDivision', 'shareScope', 'targetDivisions:j', 'targetUserIds:j', 'targetUserNames:j', 'readRecords:j', 'color', 'isPinned:b'],
   },
   {
-    table: 'wiki_pages', store: 'wiki', key: 'pages',
-    fields: ['title', 'content', 'emoji', 'parentId', 'children:j', 'paperSize', 'comments:j', 'createdAt:ts', 'updatedAt:ts'],
-  },
-  {
     // Tabel buatan pengguna: kolom & baris dinamis, jadi disimpan sebagai jsonb.
     table: 'workspace_tables', store: 'database', key: 'tables',
     fields: ['name', 'emoji', 'category', 'description', 'fields:j', 'rows:j', 'spreadsheetUrl', 'gdocsUrl', 'lastSyncedAt', 'createdAt:ts'],

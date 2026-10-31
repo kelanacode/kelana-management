@@ -1,12 +1,24 @@
 // Geolocation and Geofencing utilities for Ruang Kelana Attendance
 
-// Default Office: Menara Kelana Sudirman / Thamrin, Jakarta
+// Area absensi: wilayah Cirebon (Kota & Kabupaten).
+// Titik pusat = Kota Cirebon; radius cadangan dipakai bila nama wilayah gagal didapat.
 export const DEFAULT_OFFICE = {
-  name: 'Kantor Pusat Ruang Kelana (Menara Sudirman)',
-  latitude: -6.21462,
-  longitude: 106.81845,
-  radiusMeters: 500, // Radius toleransi kantor 500 meter
+  name: 'Wilayah Cirebon (Kota & Kabupaten)',
+  latitude: -6.732,
+  longitude: 108.5523,
+  radiusMeters: 30000,
 };
+
+// Lokasi dianggap sah bila alamat hasil GPS berada di Cirebon.
+// Jika alamat tidak tersedia (hanya koordinat), gunakan radius dari pusat Kota Cirebon.
+export function isWithinAttendanceArea(distanceMeters: number, address?: string): boolean {
+  const hasPlaceName = !!address && /[a-z]/i.test(address);
+  if (hasPlaceName) return /cirebon/i.test(address!);
+  return distanceMeters <= DEFAULT_OFFICE.radiusMeters;
+}
+
+export const formatDistance = (meters: number) =>
+  meters >= 1000 ? `${(meters / 1000).toFixed(1)} km` : `${meters} m`;
 
 // Reverse geocode coordinates to real street/city name using OpenStreetMap Nominatim
 export async function reverseGeocodeCoordinates(lat: number, lon: number): Promise<string> {
