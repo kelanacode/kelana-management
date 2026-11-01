@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   ChevronLeft, ChevronRight, Clock, MapPin, Building2,
   Calendar as CalIcon, Plus, BellRing, Sparkles, Edit3, Trash2,
-  ExternalLink, Link as LinkIcon, X, Check, Filter, AlertCircle
+  ExternalLink, Link as LinkIcon, X, Check, Filter, AlertCircle, UserCheck
 } from 'lucide-react';
 import { useBoardStore } from '../stores/boardStore';
 import { useReminderStore } from '../stores/reminderStore';
@@ -52,8 +52,12 @@ export const CalendarPage: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const { cards, boards } = useBoardStore();
-  const { session } = useAuthStore();
+  const { session, users } = useAuthStore();
   const currentUser = session?.user;
+  const activeEmployees = users
+    .filter((u) => u.status === 'Active')
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const employeeById = new Map(users.map((u) => [u.id, u]));
   const {
     reminders,
     addReminder,
@@ -77,6 +81,7 @@ export const CalendarPage: React.FC = () => {
     notes: '',
     attachmentUrl: '',
     division: 'Semua Divisi' as Division,
+    attendeeIds: [] as string[],
   });
 
   const monthStart = startOfMonth(currentDate);
@@ -119,6 +124,7 @@ export const CalendarPage: React.FC = () => {
       notes: '',
       attachmentUrl: '',
       division: 'Semua Divisi',
+      attendeeIds: [],
     });
     setIsModalOpen(true);
   };
@@ -138,6 +144,7 @@ export const CalendarPage: React.FC = () => {
       notes: rem.notes,
       attachmentUrl: rem.attachmentUrl || '',
       division: rem.division,
+      attendeeIds: rem.attendeeIds ?? [],
     });
     setIsModalOpen(true);
   };
@@ -162,6 +169,7 @@ export const CalendarPage: React.FC = () => {
       notes: formData.notes.trim(),
       attachmentUrl: formData.attachmentUrl.trim() || undefined,
       division: formData.division,
+      attendeeIds: formData.attendeeIds,
       dismissed: false,
     };
 
@@ -491,6 +499,44 @@ export const CalendarPage: React.FC = () => {
                         </p>
                       )}
 
+                      {/* 7. Peserta wajib hadir */}
+                      {(rem.attendeeIds?.length ?? 0) > 0 && (
+                        <div
+                          className={`text-xs rounded-lg p-2 border ${
+                            currentUser && rem.attendeeIds!.includes(currentUser.id)
+                              ? 'bg-primary-50 border-primary-300 dark:bg-primary-950/40 dark:border-primary-700'
+                              : 'bg-gray-50 border-gray-200 dark:bg-gray-800/50 dark:border-gray-700'
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5 font-semibold text-gray-700 dark:text-gray-200 mb-1.5">
+                            <UserCheck size={13} className="text-primary-600" />
+                            Wajib hadir ({rem.attendeeIds!.length})
+                            {currentUser && rem.attendeeIds!.includes(currentUser.id) && (
+                              <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary-600 text-white">Termasuk Anda</span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {rem.attendeeIds!.map((id) => {
+                              const u = employeeById.get(id);
+                              return (
+                                <span
+                                  key={id}
+                                  className="inline-flex items-center gap-1 pl-0.5 pr-2 py-0.5 rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-[11px] text-gray-700 dark:text-gray-200"
+                                >
+                                  <span
+                                    className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[8px] font-bold"
+                                    style={{ backgroundColor: u?.color || '#9ca3af' }}
+                                  >
+                                    {u?.avatar || '?'}
+                                  </span>
+                                  {u?.name ?? 'Mantan karyawan'}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
                       {/* 5. Lampiran link */}
                       {rem.attachmentUrl && (
                         <div className="pt-1.5 border-t border-gray-100 dark:border-gray-700">
@@ -734,6 +780,90 @@ export const CalendarPage: React.FC = () => {
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              {/* 7. Peserta wajib hadir */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <UserCheck size={14} className="text-primary-600" />
+                    7. Peserta Wajib Hadir
+                    <span className="font-normal text-gray-400">(opsional, {formData.attendeeIds.length} dipilih)</span>
+                  </label>
+                  <div className="flex items-center gap-2 text-[11px]">
+                    {formData.division !== 'Semua Divisi' && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            attendeeIds: Array.from(
+                              new Set([
+                                ...formData.attendeeIds,
+                                ...activeEmployees.filter((u) => u.division === formData.division).map((u) => u.id),
+                              ])
+                            ),
+                          })
+                        }
+                        className="text-primary-600 hover:underline"
+                      >
+                        Pilih semua {formData.division}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, attendeeIds: activeEmployees.map((u) => u.id) })}
+                      className="text-primary-600 hover:underline"
+                    >
+                      Pilih semua
+                    </button>
+                    {formData.attendeeIds.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, attendeeIds: [] })}
+                        className="text-gray-500 hover:underline"
+                      >
+                        Kosongkan
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2 p-2 rounded-xl border border-gray-200 dark:border-gray-700 max-h-40 overflow-y-auto">
+                  {activeEmployees.length === 0 && <p className="text-xs text-gray-400">Belum ada karyawan aktif.</p>}
+                  {activeEmployees.map((u) => {
+                    const selected = formData.attendeeIds.includes(u.id);
+                    return (
+                      <button
+                        key={u.id}
+                        type="button"
+                        aria-pressed={selected}
+                        title={`${u.name} · ${u.position || u.role} · ${u.division}`}
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            attendeeIds: selected
+                              ? formData.attendeeIds.filter((id) => id !== u.id)
+                              : [...formData.attendeeIds, u.id],
+                          })
+                        }
+                        className={`flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-lg text-xs border-2 transition-all ${
+                          selected
+                            ? 'bg-primary-600 border-primary-600 text-white font-semibold shadow-md shadow-primary-600/30'
+                            : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary-300'
+                        }`}
+                      >
+                        <span
+                          className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold ${selected ? 'ring-2 ring-white' : ''}`}
+                          style={{ backgroundColor: u.color }}
+                        >
+                          {u.avatar}
+                        </span>
+                        {u.name}
+                        {selected && <Check size={12} />}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

@@ -190,6 +190,10 @@ for (const t of TABLES) {
 ${colDefs(t.fields).join(',\n')},
   inserted_at timestamptz not null default now()
 );
+${t.fields
+    .map(parse)
+    .map(({ col, type }) => `alter table public.${t.table} add column if not exists ${q(col)} ${type};`)
+    .join('\n')}
 alter table public.${t.table} enable row level security;
 drop policy if exists "members_all" on public.${t.table};
 create policy "members_all" on public.${t.table} for all to authenticated

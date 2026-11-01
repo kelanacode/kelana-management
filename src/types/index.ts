@@ -224,6 +224,7 @@ export interface EventReminder {
   notes: string; // 4. Catatan mengenai acara/kegiatan
   attachmentUrl?: string; // 5. Lampiran: berupa link jika diperlukan
   division: Division; // 6. Untuk divisi mana kegiatannya
+  attendeeIds?: string[]; // 7. Peserta wajib hadir (id karyawan)
   dismissed?: boolean;
   snoozedUntil?: string;
   createdAt: string;

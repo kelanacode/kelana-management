@@ -199,6 +199,11 @@ create table if not exists public.bank_accounts (
   currency text,
   inserted_at timestamptz not null default now()
 );
+alter table public.bank_accounts add column if not exists bank_name text;
+alter table public.bank_accounts add column if not exists account_number text;
+alter table public.bank_accounts add column if not exists account_holder text;
+alter table public.bank_accounts add column if not exists balance numeric;
+alter table public.bank_accounts add column if not exists currency text;
 alter table public.bank_accounts enable row level security;
 drop policy if exists "members_all" on public.bank_accounts;
 create policy "members_all" on public.bank_accounts for all to authenticated
@@ -218,6 +223,16 @@ create table if not exists public.journal_entries (
   created_by text,
   inserted_at timestamptz not null default now()
 );
+alter table public.journal_entries add column if not exists entry_number text;
+alter table public.journal_entries add column if not exists "date" text;
+alter table public.journal_entries add column if not exists description text;
+alter table public.journal_entries add column if not exists reference text;
+alter table public.journal_entries add column if not exists account_debit text;
+alter table public.journal_entries add column if not exists account_credit text;
+alter table public.journal_entries add column if not exists amount numeric;
+alter table public.journal_entries add column if not exists category text;
+alter table public.journal_entries add column if not exists status text;
+alter table public.journal_entries add column if not exists created_by text;
 alter table public.journal_entries enable row level security;
 drop policy if exists "members_all" on public.journal_entries;
 create policy "members_all" on public.journal_entries for all to authenticated
@@ -241,6 +256,20 @@ create table if not exists public.purchase_requisitions (
   approval_date text,
   inserted_at timestamptz not null default now()
 );
+alter table public.purchase_requisitions add column if not exists pr_number text;
+alter table public.purchase_requisitions add column if not exists requester_name text;
+alter table public.purchase_requisitions add column if not exists department text;
+alter table public.purchase_requisitions add column if not exists item_name text;
+alter table public.purchase_requisitions add column if not exists category text;
+alter table public.purchase_requisitions add column if not exists quantity numeric;
+alter table public.purchase_requisitions add column if not exists unit text;
+alter table public.purchase_requisitions add column if not exists estimated_price numeric;
+alter table public.purchase_requisitions add column if not exists total_amount numeric;
+alter table public.purchase_requisitions add column if not exists reason text;
+alter table public.purchase_requisitions add column if not exists status text;
+alter table public.purchase_requisitions add column if not exists "date" text;
+alter table public.purchase_requisitions add column if not exists approved_by text;
+alter table public.purchase_requisitions add column if not exists approval_date text;
 alter table public.purchase_requisitions enable row level security;
 drop policy if exists "members_all" on public.purchase_requisitions;
 create policy "members_all" on public.purchase_requisitions for all to authenticated
@@ -263,6 +292,19 @@ create table if not exists public.purchase_orders (
   payment_status text,
   inserted_at timestamptz not null default now()
 );
+alter table public.purchase_orders add column if not exists po_number text;
+alter table public.purchase_orders add column if not exists pr_number text;
+alter table public.purchase_orders add column if not exists vendor_name text;
+alter table public.purchase_orders add column if not exists vendor_contact text;
+alter table public.purchase_orders add column if not exists item_name text;
+alter table public.purchase_orders add column if not exists quantity numeric;
+alter table public.purchase_orders add column if not exists unit_price numeric;
+alter table public.purchase_orders add column if not exists total_amount numeric;
+alter table public.purchase_orders add column if not exists status text;
+alter table public.purchase_orders add column if not exists order_date text;
+alter table public.purchase_orders add column if not exists expected_delivery text;
+alter table public.purchase_orders add column if not exists goods_receipt_status text;
+alter table public.purchase_orders add column if not exists payment_status text;
 alter table public.purchase_orders enable row level security;
 drop policy if exists "members_all" on public.purchase_orders;
 create policy "members_all" on public.purchase_orders for all to authenticated
@@ -285,6 +327,19 @@ create table if not exists public.sales_orders (
   payment_method text,
   inserted_at timestamptz not null default now()
 );
+alter table public.sales_orders add column if not exists so_number text;
+alter table public.sales_orders add column if not exists customer_name text;
+alter table public.sales_orders add column if not exists customer_company text;
+alter table public.sales_orders add column if not exists item_name text;
+alter table public.sales_orders add column if not exists quantity numeric;
+alter table public.sales_orders add column if not exists unit_price numeric;
+alter table public.sales_orders add column if not exists total_amount numeric;
+alter table public.sales_orders add column if not exists status text;
+alter table public.sales_orders add column if not exists order_date text;
+alter table public.sales_orders add column if not exists invoice_number text;
+alter table public.sales_orders add column if not exists invoice_date text;
+alter table public.sales_orders add column if not exists payment_status text;
+alter table public.sales_orders add column if not exists payment_method text;
 alter table public.sales_orders enable row level security;
 drop policy if exists "members_all" on public.sales_orders;
 create policy "members_all" on public.sales_orders for all to authenticated
@@ -304,6 +359,16 @@ create table if not exists public.inventory_items (
   last_updated text,
   inserted_at timestamptz not null default now()
 );
+alter table public.inventory_items add column if not exists sku text;
+alter table public.inventory_items add column if not exists "name" text;
+alter table public.inventory_items add column if not exists category text;
+alter table public.inventory_items add column if not exists stock numeric;
+alter table public.inventory_items add column if not exists min_stock numeric;
+alter table public.inventory_items add column if not exists unit text;
+alter table public.inventory_items add column if not exists valuation_per_unit numeric;
+alter table public.inventory_items add column if not exists total_valuation numeric;
+alter table public.inventory_items add column if not exists warehouse_location text;
+alter table public.inventory_items add column if not exists last_updated text;
 alter table public.inventory_items enable row level security;
 drop policy if exists "members_all" on public.inventory_items;
 create policy "members_all" on public.inventory_items for all to authenticated
@@ -324,6 +389,17 @@ create table if not exists public.fixed_assets (
   assigned_to text,
   inserted_at timestamptz not null default now()
 );
+alter table public.fixed_assets add column if not exists asset_code text;
+alter table public.fixed_assets add column if not exists "name" text;
+alter table public.fixed_assets add column if not exists category text;
+alter table public.fixed_assets add column if not exists location text;
+alter table public.fixed_assets add column if not exists purchase_date text;
+alter table public.fixed_assets add column if not exists acquisition_cost numeric;
+alter table public.fixed_assets add column if not exists useful_life_years numeric;
+alter table public.fixed_assets add column if not exists accumulated_depreciation numeric;
+alter table public.fixed_assets add column if not exists book_value numeric;
+alter table public.fixed_assets add column if not exists "condition" text;
+alter table public.fixed_assets add column if not exists assigned_to text;
 alter table public.fixed_assets enable row level security;
 drop policy if exists "members_all" on public.fixed_assets;
 create policy "members_all" on public.fixed_assets for all to authenticated
@@ -349,6 +425,22 @@ create table if not exists public.payroll_records (
   notes text,
   inserted_at timestamptz not null default now()
 );
+alter table public.payroll_records add column if not exists employee_nik text;
+alter table public.payroll_records add column if not exists employee_name text;
+alter table public.payroll_records add column if not exists division text;
+alter table public.payroll_records add column if not exists position text;
+alter table public.payroll_records add column if not exists period text;
+alter table public.payroll_records add column if not exists basic_salary numeric;
+alter table public.payroll_records add column if not exists allowances numeric;
+alter table public.payroll_records add column if not exists attendance_deductions numeric;
+alter table public.payroll_records add column if not exists tax_pph21 numeric;
+alter table public.payroll_records add column if not exists net_salary numeric;
+alter table public.payroll_records add column if not exists payment_status text;
+alter table public.payroll_records add column if not exists disbursement_date text;
+alter table public.payroll_records add column if not exists payment_proof_url text;
+alter table public.payroll_records add column if not exists slip_sent_status text;
+alter table public.payroll_records add column if not exists slip_sent_at text;
+alter table public.payroll_records add column if not exists notes text;
 alter table public.payroll_records enable row level security;
 drop policy if exists "members_all" on public.payroll_records;
 create policy "members_all" on public.payroll_records for all to authenticated
@@ -365,6 +457,13 @@ create table if not exists public.department_budgets (
   status text,
   inserted_at timestamptz not null default now()
 );
+alter table public.department_budgets add column if not exists department text;
+alter table public.department_budgets add column if not exists year numeric;
+alter table public.department_budgets add column if not exists allocated_budget numeric;
+alter table public.department_budgets add column if not exists spent_budget numeric;
+alter table public.department_budgets add column if not exists remaining_budget numeric;
+alter table public.department_budgets add column if not exists variance_percentage numeric;
+alter table public.department_budgets add column if not exists status text;
 alter table public.department_budgets enable row level security;
 drop policy if exists "members_all" on public.department_budgets;
 create policy "members_all" on public.department_budgets for all to authenticated
@@ -384,6 +483,16 @@ create table if not exists public.expense_claims (
   approved_by text,
   inserted_at timestamptz not null default now()
 );
+alter table public.expense_claims add column if not exists claim_number text;
+alter table public.expense_claims add column if not exists claimant_name text;
+alter table public.expense_claims add column if not exists department text;
+alter table public.expense_claims add column if not exists description text;
+alter table public.expense_claims add column if not exists category text;
+alter table public.expense_claims add column if not exists amount numeric;
+alter table public.expense_claims add column if not exists receipt_image text;
+alter table public.expense_claims add column if not exists status text;
+alter table public.expense_claims add column if not exists submission_date text;
+alter table public.expense_claims add column if not exists approved_by text;
 alter table public.expense_claims enable row level security;
 drop policy if exists "members_all" on public.expense_claims;
 create policy "members_all" on public.expense_claims for all to authenticated
@@ -419,6 +528,32 @@ create table if not exists public.budget_requisitions (
   updated_at timestamptz not null default now(),
   inserted_at timestamptz not null default now()
 );
+alter table public.budget_requisitions add column if not exists request_number text;
+alter table public.budget_requisitions add column if not exists title text;
+alter table public.budget_requisitions add column if not exists "type" text;
+alter table public.budget_requisitions add column if not exists department text;
+alter table public.budget_requisitions add column if not exists requester_id text;
+alter table public.budget_requisitions add column if not exists requester_name text;
+alter table public.budget_requisitions add column if not exists requester_position text;
+alter table public.budget_requisitions add column if not exists estimated_amount numeric;
+alter table public.budget_requisitions add column if not exists description text;
+alter table public.budget_requisitions add column if not exists vendor_name text;
+alter table public.budget_requisitions add column if not exists purpose text;
+alter table public.budget_requisitions add column if not exists attachment_url text;
+alter table public.budget_requisitions add column if not exists attachment_name text;
+alter table public.budget_requisitions add column if not exists is_encumbered boolean;
+alter table public.budget_requisitions add column if not exists department_remaining_before numeric;
+alter table public.budget_requisitions add column if not exists department_remaining_after numeric;
+alter table public.budget_requisitions add column if not exists status text;
+alter table public.budget_requisitions add column if not exists hr_approval jsonb;
+alter table public.budget_requisitions add column if not exists finance_approval jsonb;
+alter table public.budget_requisitions add column if not exists ceo_approval jsonb;
+alter table public.budget_requisitions add column if not exists disbursed_at text;
+alter table public.budget_requisitions add column if not exists disbursed_by text;
+alter table public.budget_requisitions add column if not exists disbursement_proof_url text;
+alter table public.budget_requisitions add column if not exists bank_account_id text;
+alter table public.budget_requisitions add column if not exists created_at timestamptz;
+alter table public.budget_requisitions add column if not exists updated_at timestamptz;
 alter table public.budget_requisitions enable row level security;
 drop policy if exists "members_all" on public.budget_requisitions;
 create policy "members_all" on public.budget_requisitions for all to authenticated
@@ -481,6 +616,59 @@ create table if not exists public.p2p_cases (
   updated_at timestamptz not null default now(),
   inserted_at timestamptz not null default now()
 );
+alter table public.p2p_cases add column if not exists case_number text;
+alter table public.p2p_cases add column if not exists title text;
+alter table public.p2p_cases add column if not exists "type" text;
+alter table public.p2p_cases add column if not exists department text;
+alter table public.p2p_cases add column if not exists requester_name text;
+alter table public.p2p_cases add column if not exists requester_id text;
+alter table public.p2p_cases add column if not exists requester_nik text;
+alter table public.p2p_cases add column if not exists request_category text;
+alter table public.p2p_cases add column if not exists item_name text;
+alter table public.p2p_cases add column if not exists quantity numeric;
+alter table public.p2p_cases add column if not exists unit text;
+alter table public.p2p_cases add column if not exists estimated_unit_price numeric;
+alter table public.p2p_cases add column if not exists total_estimated_price numeric;
+alter table public.p2p_cases add column if not exists description text;
+alter table public.p2p_cases add column if not exists justification text;
+alter table public.p2p_cases add column if not exists urgency text;
+alter table public.p2p_cases add column if not exists attachment_url text;
+alter table public.p2p_cases add column if not exists attachment_file_name text;
+alter table public.p2p_cases add column if not exists manager_approval jsonb;
+alter table public.p2p_cases add column if not exists hr_approval jsonb;
+alter table public.p2p_cases add column if not exists finance_approval jsonb;
+alter table public.p2p_cases add column if not exists ceo_approval jsonb;
+alter table public.p2p_cases add column if not exists stage text;
+alter table public.p2p_cases add column if not exists po_number text;
+alter table public.p2p_cases add column if not exists selected_vendor text;
+alter table public.p2p_cases add column if not exists selected_vendor_contact text;
+alter table public.p2p_cases add column if not exists agreed_price numeric;
+alter table public.p2p_cases add column if not exists quotes jsonb;
+alter table public.p2p_cases add column if not exists po_issued_at text;
+alter table public.p2p_cases add column if not exists po_issued_by text;
+alter table public.p2p_cases add column if not exists payment_terms text;
+alter table public.p2p_cases add column if not exists gr_number text;
+alter table public.p2p_cases add column if not exists delivery_note_number text;
+alter table public.p2p_cases add column if not exists received_at text;
+alter table public.p2p_cases add column if not exists received_by text;
+alter table public.p2p_cases add column if not exists received_quantity numeric;
+alter table public.p2p_cases add column if not exists qc_status text;
+alter table public.p2p_cases add column if not exists bast_notes text;
+alter table public.p2p_cases add column if not exists proof_image_url text;
+alter table public.p2p_cases add column if not exists proof_image_file_name text;
+alter table public.p2p_cases add column if not exists vendor_invoice_number text;
+alter table public.p2p_cases add column if not exists tax_invoice_number text;
+alter table public.p2p_cases add column if not exists invoice_amount numeric;
+alter table public.p2p_cases add column if not exists three_way_matched boolean;
+alter table public.p2p_cases add column if not exists matched_by text;
+alter table public.p2p_cases add column if not exists matched_at text;
+alter table public.p2p_cases add column if not exists paid_at text;
+alter table public.p2p_cases add column if not exists paid_by text;
+alter table public.p2p_cases add column if not exists paid_amount numeric;
+alter table public.p2p_cases add column if not exists bank_account_id text;
+alter table public.p2p_cases add column if not exists payment_reference text;
+alter table public.p2p_cases add column if not exists created_at timestamptz;
+alter table public.p2p_cases add column if not exists updated_at timestamptz;
 alter table public.p2p_cases enable row level security;
 drop policy if exists "members_all" on public.p2p_cases;
 create policy "members_all" on public.p2p_cases for all to authenticated
@@ -511,6 +699,27 @@ create table if not exists public.company_tasks (
   opened_by_user_ids jsonb,
   inserted_at timestamptz not null default now()
 );
+alter table public.company_tasks add column if not exists title text;
+alter table public.company_tasks add column if not exists description text;
+alter table public.company_tasks add column if not exists priority text;
+alter table public.company_tasks add column if not exists status text;
+alter table public.company_tasks add column if not exists target_type text;
+alter table public.company_tasks add column if not exists target_division text;
+alter table public.company_tasks add column if not exists assigned_to_user_ids jsonb;
+alter table public.company_tasks add column if not exists assigned_to_names jsonb;
+alter table public.company_tasks add column if not exists created_by_user_id text;
+alter table public.company_tasks add column if not exists created_by_name text;
+alter table public.company_tasks add column if not exists created_by_role text;
+alter table public.company_tasks add column if not exists created_at timestamptz;
+alter table public.company_tasks add column if not exists published_at text;
+alter table public.company_tasks add column if not exists due_date text;
+alter table public.company_tasks add column if not exists points numeric;
+alter table public.company_tasks add column if not exists attachments jsonb;
+alter table public.company_tasks add column if not exists started_at text;
+alter table public.company_tasks add column if not exists submission jsonb;
+alter table public.company_tasks add column if not exists review jsonb;
+alter table public.company_tasks add column if not exists revision_notes text;
+alter table public.company_tasks add column if not exists opened_by_user_ids jsonb;
 alter table public.company_tasks enable row level security;
 drop policy if exists "members_all" on public.company_tasks;
 create policy "members_all" on public.company_tasks for all to authenticated
@@ -541,6 +750,27 @@ create table if not exists public.attendance_records (
   updated_at timestamptz not null default now(),
   inserted_at timestamptz not null default now()
 );
+alter table public.attendance_records add column if not exists user_id text;
+alter table public.attendance_records add column if not exists user_name text;
+alter table public.attendance_records add column if not exists user_nik text;
+alter table public.attendance_records add column if not exists user_division text;
+alter table public.attendance_records add column if not exists "date" text;
+alter table public.attendance_records add column if not exists clock_in_time text;
+alter table public.attendance_records add column if not exists clock_in_timestamp text;
+alter table public.attendance_records add column if not exists clock_in_location jsonb;
+alter table public.attendance_records add column if not exists clock_in_selfie_photo text;
+alter table public.attendance_records add column if not exists clock_in_notes text;
+alter table public.attendance_records add column if not exists clock_out_time text;
+alter table public.attendance_records add column if not exists clock_out_timestamp text;
+alter table public.attendance_records add column if not exists clock_out_location jsonb;
+alter table public.attendance_records add column if not exists clock_out_selfie_photo text;
+alter table public.attendance_records add column if not exists clock_out_notes text;
+alter table public.attendance_records add column if not exists work_type text;
+alter table public.attendance_records add column if not exists status text;
+alter table public.attendance_records add column if not exists has_anomaly boolean;
+alter table public.attendance_records add column if not exists anomaly_reason text;
+alter table public.attendance_records add column if not exists created_at timestamptz;
+alter table public.attendance_records add column if not exists updated_at timestamptz;
 alter table public.attendance_records enable row level security;
 drop policy if exists "members_all" on public.attendance_records;
 create policy "members_all" on public.attendance_records for all to authenticated
@@ -565,6 +795,21 @@ create table if not exists public.attendance_corrections (
   created_at timestamptz not null default now(),
   inserted_at timestamptz not null default now()
 );
+alter table public.attendance_corrections add column if not exists user_id text;
+alter table public.attendance_corrections add column if not exists user_name text;
+alter table public.attendance_corrections add column if not exists user_nik text;
+alter table public.attendance_corrections add column if not exists user_division text;
+alter table public.attendance_corrections add column if not exists "date" text;
+alter table public.attendance_corrections add column if not exists "type" text;
+alter table public.attendance_corrections add column if not exists proposed_clock_in text;
+alter table public.attendance_corrections add column if not exists proposed_clock_out text;
+alter table public.attendance_corrections add column if not exists reason text;
+alter table public.attendance_corrections add column if not exists attachment_url text;
+alter table public.attendance_corrections add column if not exists status text;
+alter table public.attendance_corrections add column if not exists reviewed_by text;
+alter table public.attendance_corrections add column if not exists review_notes text;
+alter table public.attendance_corrections add column if not exists reviewed_at text;
+alter table public.attendance_corrections add column if not exists created_at timestamptz;
 alter table public.attendance_corrections enable row level security;
 drop policy if exists "members_all" on public.attendance_corrections;
 create policy "members_all" on public.attendance_corrections for all to authenticated
@@ -582,12 +827,28 @@ create table if not exists public.event_reminders (
   notes text,
   attachment_url text,
   division text,
+  attendee_ids jsonb,
   dismissed boolean,
   snoozed_until text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   inserted_at timestamptz not null default now()
 );
+alter table public.event_reminders add column if not exists title text;
+alter table public.event_reminders add column if not exists "date" text;
+alter table public.event_reminders add column if not exists is_all_day boolean;
+alter table public.event_reminders add column if not exists start_time text;
+alter table public.event_reminders add column if not exists end_time text;
+alter table public.event_reminders add column if not exists location text;
+alter table public.event_reminders add column if not exists reminder_minutes numeric;
+alter table public.event_reminders add column if not exists notes text;
+alter table public.event_reminders add column if not exists attachment_url text;
+alter table public.event_reminders add column if not exists division text;
+alter table public.event_reminders add column if not exists attendee_ids jsonb;
+alter table public.event_reminders add column if not exists dismissed boolean;
+alter table public.event_reminders add column if not exists snoozed_until text;
+alter table public.event_reminders add column if not exists created_at timestamptz;
+alter table public.event_reminders add column if not exists updated_at timestamptz;
 alter table public.event_reminders enable row level security;
 drop policy if exists "members_all" on public.event_reminders;
 create policy "members_all" on public.event_reminders for all to authenticated
@@ -602,6 +863,11 @@ create table if not exists public.boards (
   updated_at timestamptz not null default now(),
   inserted_at timestamptz not null default now()
 );
+alter table public.boards add column if not exists title text;
+alter table public.boards add column if not exists description text;
+alter table public.boards add column if not exists emoji text;
+alter table public.boards add column if not exists created_at timestamptz;
+alter table public.boards add column if not exists updated_at timestamptz;
 alter table public.boards enable row level security;
 drop policy if exists "members_all" on public.boards;
 create policy "members_all" on public.boards for all to authenticated
@@ -615,6 +881,10 @@ create table if not exists public.board_columns (
   "order" numeric,
   inserted_at timestamptz not null default now()
 );
+alter table public.board_columns add column if not exists title text;
+alter table public.board_columns add column if not exists board_id text;
+alter table public.board_columns add column if not exists color text;
+alter table public.board_columns add column if not exists "order" numeric;
 alter table public.board_columns enable row level security;
 drop policy if exists "members_all" on public.board_columns;
 create policy "members_all" on public.board_columns for all to authenticated
@@ -636,6 +906,18 @@ create table if not exists public.board_cards (
   "order" numeric,
   inserted_at timestamptz not null default now()
 );
+alter table public.board_cards add column if not exists title text;
+alter table public.board_cards add column if not exists description text;
+alter table public.board_cards add column if not exists column_id text;
+alter table public.board_cards add column if not exists board_id text;
+alter table public.board_cards add column if not exists assignees jsonb;
+alter table public.board_cards add column if not exists labels jsonb;
+alter table public.board_cards add column if not exists deadline text;
+alter table public.board_cards add column if not exists priority text;
+alter table public.board_cards add column if not exists comments jsonb;
+alter table public.board_cards add column if not exists created_at timestamptz;
+alter table public.board_cards add column if not exists updated_at timestamptz;
+alter table public.board_cards add column if not exists "order" numeric;
 alter table public.board_cards enable row level security;
 drop policy if exists "members_all" on public.board_cards;
 create policy "members_all" on public.board_cards for all to authenticated
@@ -663,6 +945,24 @@ create table if not exists public.notes (
   is_pinned boolean,
   inserted_at timestamptz not null default now()
 );
+alter table public.notes add column if not exists title text;
+alter table public.notes add column if not exists content text;
+alter table public.notes add column if not exists tags jsonb;
+alter table public.notes add column if not exists comments jsonb;
+alter table public.notes add column if not exists paper_size text;
+alter table public.notes add column if not exists created_at timestamptz;
+alter table public.notes add column if not exists updated_at timestamptz;
+alter table public.notes add column if not exists emoji text;
+alter table public.notes add column if not exists author_id text;
+alter table public.notes add column if not exists author_name text;
+alter table public.notes add column if not exists author_division text;
+alter table public.notes add column if not exists share_scope text;
+alter table public.notes add column if not exists target_divisions jsonb;
+alter table public.notes add column if not exists target_user_ids jsonb;
+alter table public.notes add column if not exists target_user_names jsonb;
+alter table public.notes add column if not exists read_records jsonb;
+alter table public.notes add column if not exists color text;
+alter table public.notes add column if not exists is_pinned boolean;
 alter table public.notes enable row level security;
 drop policy if exists "members_all" on public.notes;
 create policy "members_all" on public.notes for all to authenticated
@@ -682,6 +982,16 @@ create table if not exists public.workspace_tables (
   created_at timestamptz not null default now(),
   inserted_at timestamptz not null default now()
 );
+alter table public.workspace_tables add column if not exists "name" text;
+alter table public.workspace_tables add column if not exists emoji text;
+alter table public.workspace_tables add column if not exists category text;
+alter table public.workspace_tables add column if not exists description text;
+alter table public.workspace_tables add column if not exists fields jsonb;
+alter table public.workspace_tables add column if not exists rows jsonb;
+alter table public.workspace_tables add column if not exists spreadsheet_url text;
+alter table public.workspace_tables add column if not exists gdocs_url text;
+alter table public.workspace_tables add column if not exists last_synced_at text;
+alter table public.workspace_tables add column if not exists created_at timestamptz;
 alter table public.workspace_tables enable row level security;
 drop policy if exists "members_all" on public.workspace_tables;
 create policy "members_all" on public.workspace_tables for all to authenticated
@@ -706,6 +1016,21 @@ create table if not exists public.workspace_documents (
   updated_at timestamptz not null default now(),
   inserted_at timestamptz not null default now()
 );
+alter table public.workspace_documents add column if not exists title text;
+alter table public.workspace_documents add column if not exists emoji text;
+alter table public.workspace_documents add column if not exists category text;
+alter table public.workspace_documents add column if not exists description text;
+alter table public.workspace_documents add column if not exists content text;
+alter table public.workspace_documents add column if not exists author text;
+alter table public.workspace_documents add column if not exists department text;
+alter table public.workspace_documents add column if not exists version text;
+alter table public.workspace_documents add column if not exists status text;
+alter table public.workspace_documents add column if not exists paper_size text;
+alter table public.workspace_documents add column if not exists comments jsonb;
+alter table public.workspace_documents add column if not exists gdocs_url text;
+alter table public.workspace_documents add column if not exists last_synced_at text;
+alter table public.workspace_documents add column if not exists created_at timestamptz;
+alter table public.workspace_documents add column if not exists updated_at timestamptz;
 alter table public.workspace_documents enable row level security;
 drop policy if exists "members_all" on public.workspace_documents;
 create policy "members_all" on public.workspace_documents for all to authenticated
@@ -725,6 +1050,16 @@ create table if not exists public.drive_items (
   is_starred boolean,
   inserted_at timestamptz not null default now()
 );
+alter table public.drive_items add column if not exists "name" text;
+alter table public.drive_items add column if not exists "type" text;
+alter table public.drive_items add column if not exists mime_type text;
+alter table public.drive_items add column if not exists size text;
+alter table public.drive_items add column if not exists updated_at text;
+alter table public.drive_items add column if not exists url text;
+alter table public.drive_items add column if not exists author text;
+alter table public.drive_items add column if not exists division text;
+alter table public.drive_items add column if not exists tags jsonb;
+alter table public.drive_items add column if not exists is_starred boolean;
 alter table public.drive_items enable row level security;
 drop policy if exists "members_all" on public.drive_items;
 create policy "members_all" on public.drive_items for all to authenticated
@@ -738,6 +1073,10 @@ create table if not exists public.activities (
   "timestamp" timestamptz,
   inserted_at timestamptz not null default now()
 );
+alter table public.activities add column if not exists member_id text;
+alter table public.activities add column if not exists action text;
+alter table public.activities add column if not exists target text;
+alter table public.activities add column if not exists "timestamp" timestamptz;
 alter table public.activities enable row level security;
 drop policy if exists "members_all" on public.activities;
 create policy "members_all" on public.activities for all to authenticated

@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import {
   BellRing, Clock, MapPin, Building2, Link as LinkIcon,
-  X, Check, AlertTriangle, ExternalLink, Calendar
+  X, Check, AlertTriangle, ExternalLink, Calendar, UserCheck
 } from 'lucide-react';
 import { useReminderStore } from '../../stores/reminderStore';
+import { useAuthStore } from '../../stores/authStore';
 
 export const ReminderPopupAlert: React.FC = () => {
   const {
@@ -13,6 +14,7 @@ export const ReminderPopupAlert: React.FC = () => {
     dismissAlert,
     snoozeAlert
   } = useReminderStore();
+  const { users, session } = useAuthStore();
 
   // Polling interval to check upcoming events based on reminderMinutes in WIB
   useEffect(() => {
@@ -141,6 +143,39 @@ export const ReminderPopupAlert: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* 7. Peserta wajib hadir */}
+          {(rem.attendeeIds?.length ?? 0) > 0 && (
+            <div>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider flex items-center gap-1.5">
+                <UserCheck size={13} /> Wajib Hadir ({rem.attendeeIds!.length}):
+              </label>
+              {session && rem.attendeeIds!.includes(session.user.id) && (
+                <p className="text-xs font-bold text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-800 rounded-lg px-3 py-1.5 mb-2">
+                  Anda termasuk peserta yang wajib hadir.
+                </p>
+              )}
+              <div className="flex flex-wrap gap-1.5">
+                {rem.attendeeIds!.map((id) => {
+                  const u = users.find((x) => x.id === id);
+                  return (
+                    <span
+                      key={id}
+                      className="inline-flex items-center gap-1 pl-0.5 pr-2 py-0.5 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs text-gray-700 dark:text-gray-200"
+                    >
+                      <span
+                        className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold"
+                        style={{ backgroundColor: u?.color || '#9ca3af' }}
+                      >
+                        {u?.avatar || '?'}
+                      </span>
+                      {u?.name ?? 'Mantan karyawan'}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* 4. Catatan mengenai acara/kegiatan */}
           {rem.notes && (

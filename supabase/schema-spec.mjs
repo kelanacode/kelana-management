@@ -71,7 +71,7 @@ export const TABLES = [
   },
   {
     table: 'event_reminders', store: 'reminder', key: 'reminders',
-    fields: ['title', 'date', 'isAllDay:b', 'startTime', 'endTime', 'location', 'reminderMinutes:n', 'notes', 'attachmentUrl', 'division', 'dismissed:b', 'snoozedUntil', 'createdAt:ts', 'updatedAt:ts'],
+    fields: ['title', 'date', 'isAllDay:b', 'startTime', 'endTime', 'location', 'reminderMinutes:n', 'notes', 'attachmentUrl', 'division', 'attendeeIds:j', 'dismissed:b', 'snoozedUntil', 'createdAt:ts', 'updatedAt:ts'],
   },
 
   // ---------- Board / Kanban ----------
