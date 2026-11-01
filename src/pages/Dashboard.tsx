@@ -29,7 +29,18 @@ import { ShoppingCart } from 'lucide-react';
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { notes, addNote, markNoteAsRead, selectNote } = useNotesStore();
-  const { boards, cards } = useBoardStore();
+  const { boards, cards, columns } = useBoardStore();
+
+  // Kolom "selesai" tiap board: kolom bernama Done / Selesai, atau kolom paling kanan bila tidak ada
+  const doneColumnIds = new Set(
+    boards
+      .map((b) => {
+        const boardCols = columns.filter((c) => c.boardId === b.id).sort((x, y) => x.order - y.order);
+        const named = boardCols.find((c) => /\b(done|selesai|completed?)\b/i.test(c.title));
+        return (named ?? boardCols[boardCols.length - 1])?.id;
+      })
+      .filter((id): id is string => !!id)
+  );
   const { tables } = useDatabaseStore();
   const { reminders } = useReminderStore();
   const { settings, members, activities } = useAppStore();
@@ -79,7 +90,7 @@ export const Dashboard: React.FC = () => {
     .slice(0, 5);
 
   const overdueCards = cards.filter(
-    (c) => c.deadline && isBefore(parseISO(c.deadline), now) && c.columnId !== 'col-4'
+    (c) => c.deadline && isBefore(parseISO(c.deadline), now) && !doneColumnIds.has(c.columnId)
   );
 
   // Saring catatan: HANYA yang ditargetkan untuk pengguna & BELUM kedaluwarsa (otomatis terhapus setelah 2x24 jam sejak dibaca)
@@ -503,7 +514,7 @@ export const Dashboard: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {boards.slice(0, 4).map((board) => {
             const boardCards = cards.filter((c) => c.boardId === board.id);
-            const done = boardCards.filter((c) => c.columnId.includes('col-4') || c.columnId.includes('col-7')).length;
+            const done = boardCards.filter((c) => doneColumnIds.has(c.columnId)).length;
             const progress = boardCards.length > 0 ? Math.round((done / boardCards.length) * 100) : 0;
             return (
               <button key={board.id} onClick={() => navigate('/board')} className="p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md transition-all text-left">
