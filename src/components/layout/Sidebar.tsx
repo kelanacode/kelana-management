@@ -23,6 +23,7 @@ import { useAppStore } from '../../stores/appStore';
 import { useBoardStore } from '../../stores/boardStore';
 import { useNotesStore } from '../../stores/notesStore';
 import { useAuthStore } from '../../stores/authStore';
+import { useFeatureStore, canSeeLockedFeatures } from '../../stores/featureStore';
 import { AccountManagementModal } from '../auth/AccountManagementModal';
 import { ProfilePersonalizationModal } from '../profile/ProfilePersonalizationModal';
 
@@ -64,10 +65,14 @@ export const Sidebar: React.FC = () => {
     anyUser?.role === 'CEO' ||
     anyUser?.position?.toLowerCase().includes('ceo');
 
+  // Absensi sedang dikunci: hanya CEO, Admin, dan HR yang melihat menunya
+  const attendanceEnabled = useFeatureStore((s) => s.attendanceEnabled);
+  const showAttendance = attendanceEnabled || canSeeLockedFeatures(anyUser?.role);
+
   const visibleNavItems = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/tasks', icon: CheckSquare, label: 'Taks' },
-    { to: '/attendance', icon: Clock, label: 'Absensi Karyawan' },
+    ...(showAttendance ? [{ to: '/attendance', icon: Clock, label: 'Absensi Karyawan' }] : []),
     ...(hasFinanceAccess ? [{ to: '/finance', icon: DollarSign, label: 'Keuangan (Finance)' }] : []),
     { to: '/notes', icon: FileText, label: 'Notes' },
     { to: '/board', icon: Kanban, label: 'Kanban Board' },

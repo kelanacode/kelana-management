@@ -7,6 +7,7 @@ import { PROFILE_COLUMNS } from '../lib/dbSchema';
 import { fromRow, toRow, startSync, stopSync } from '../lib/sync';
 import { useAppStore } from './appStore';
 import { useChatStore } from './chatStore';
+import { useFeatureStore } from './featureStore';
 
 export interface InvitationInfo {
   email: string;
@@ -148,7 +149,7 @@ export const useAuthStore = create<AuthStore>()(
         const sbSession = data.session;
         if (!sbSession) {
           set({ session: null });
-          await Promise.all([stopSync(), useChatStore.getState().stop()]);
+          await Promise.all([stopSync(), useChatStore.getState().stop(), useFeatureStore.getState().stop()]);
           return;
         }
         const { data: profile } = await supabase.from('profiles').select('*').eq('id', sbSession.user.id).maybeSingle();
@@ -171,6 +172,7 @@ export const useAuthStore = create<AuthStore>()(
         await get().refreshUsers();
         void startSync();
         void useChatStore.getState().start(sbSession.user.id);
+        void useFeatureStore.getState().start();
       },
 
       login: async (identifier, password, rememberMe = false) => {
@@ -235,6 +237,7 @@ export const useAuthStore = create<AuthStore>()(
         await get().refreshUsers();
         void startSync();
         void useChatStore.getState().start(user.id);
+        void useFeatureStore.getState().start();
         return { success: true };
       },
 
@@ -251,7 +254,7 @@ export const useAuthStore = create<AuthStore>()(
       logout: () => {
         set({ session: null, users: [] });
         twoFactorPassedFor = null;
-        void Promise.all([stopSync(), useChatStore.getState().stop()]).then(() => supabase.auth.signOut());
+        void Promise.all([stopSync(), useChatStore.getState().stop(), useFeatureStore.getState().stop()]).then(() => supabase.auth.signOut());
       },
 
       checkSessionValid: () => {

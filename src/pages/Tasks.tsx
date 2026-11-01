@@ -676,20 +676,6 @@ export const TasksPage: React.FC = () => {
                   className="input text-xs"
                 />
               </div>
-
-              <div>
-                <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">
-                  Bobot Skor Maksimal (Points)
-                </label>
-                <input
-                  type="number"
-                  min={10}
-                  max={100}
-                  value={points}
-                  onChange={(e) => setPoints(Number(e.target.value))}
-                  className="input text-xs"
-                />
-              </div>
             </div>
 
             {/* Attachments Section */}
