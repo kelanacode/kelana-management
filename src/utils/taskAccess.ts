@@ -65,3 +65,34 @@ export const checkTaskAccess = (
 
   return false;
 };
+
+/**
+ * Siapa yang boleh MENGERJAKAN dan MENGUMPULKAN tugas (Mulai Kerjakan, Kumpulkan, Revisi):
+ * - Penerima tugas: semua karyawan bila target 'all', anggota divisi bila target 'division',
+ *   atau karyawan yang dipilih bila target 'individual'.
+ * - CEO & Admin (boleh mengumpulkan mewakili karyawan).
+ * Pimpinan lain (HR, direktur) tetap bisa melihat & mereview, tapi tidak mengumpulkan.
+ */
+export const canWorkOnTask = (
+  task: CompanyTask,
+  user?: { id?: string; role?: string; division?: string } | null
+): boolean => {
+  if (!user) return false;
+  if (user.role === 'CEO' || user.role === 'Admin') return true;
+  if (task.status === 'Draft') return false;
+
+  if (task.targetType === 'all') return true;
+
+  if (task.targetType === 'division') {
+    const userDivision = (user.division || '').trim().toLowerCase();
+    const targetDept = (task.targetDivision || '').trim().toLowerCase();
+    if (!userDivision || !targetDept) return false;
+    return userDivision === targetDept || userDivision.includes(targetDept) || targetDept.includes(userDivision);
+  }
+
+  if (task.targetType === 'individual') {
+    return !!user.id && (task.assignedToUserIds || []).includes(user.id);
+  }
+
+  return false;
+};

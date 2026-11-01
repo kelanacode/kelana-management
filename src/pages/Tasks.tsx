@@ -10,7 +10,7 @@ import {
 import { useTaskStore } from '../stores/taskStore';
 import { useAuthStore } from '../stores/authStore';
 import { CompanyTask, TaskStatus, TaskPriority, TaskTargetType, TaskAttachment } from '../types/task';
-import { checkTaskAccess } from '../utils/taskAccess';
+import { checkTaskAccess, canWorkOnTask } from '../utils/taskAccess';
 import { format, parseISO, isPast, differenceInDays } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 
@@ -959,8 +959,8 @@ export const TasksPage: React.FC = () => {
                         </div>
                       )}
 
-                      {/* Employee Action: Start Task */}
-                      {task.status === 'Assigned' && (
+                      {/* Employee Action: Start Task (hanya penerima tugas, Admin, CEO) */}
+                      {task.status === 'Assigned' && canWorkOnTask(task, currentUser) && (
                         <button
                           onClick={() => startTask(task.id, userId)}
                           className="btn-primary text-xs py-1.5 px-3 font-semibold cursor-pointer"
@@ -969,8 +969,9 @@ export const TasksPage: React.FC = () => {
                         </button>
                       )}
 
-                      {/* Employee Action: Submit / Revisi */}
-                      {(task.status === 'In Progress' || task.status === 'Revision Required' || task.status === 'Completed') && (
+                      {/* Employee Action: Submit / Revisi (hanya penerima tugas, Admin, CEO) */}
+                      {(task.status === 'In Progress' || task.status === 'Revision Required' || task.status === 'Completed') &&
+                        canWorkOnTask(task, currentUser) && (
                         <button
                           onClick={() => {
                             setSelectedTask(task);
@@ -1258,7 +1259,8 @@ export const TasksPage: React.FC = () => {
               )}
 
               {/* Form Submit (Langkah 2: Pengumpulan & Revisi Tugas) */}
-              {(selectedTask.status === 'In Progress' || selectedTask.status === 'Revision Required' || selectedTask.status === 'Rejected' || selectedTask.status === 'Completed') && (
+              {(selectedTask.status === 'In Progress' || selectedTask.status === 'Revision Required' || selectedTask.status === 'Rejected' || selectedTask.status === 'Completed') &&
+                canWorkOnTask(selectedTask, currentUser) && (
                 <div className="p-5 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 rounded-2xl space-y-3.5">
                   <h4 className="font-bold text-indigo-950 dark:text-indigo-200 text-sm flex items-center gap-1.5">
                     <Send size={15} />
