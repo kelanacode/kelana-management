@@ -3,7 +3,7 @@ import {
   Plus, Trash2, ChevronDown, MoreHorizontal,
   Table as TableIcon, LayoutGrid, Database as DatabaseIcon, Edit3, X, Check,
   FileText, FileSpreadsheet, ExternalLink, RefreshCw, Sparkles,
-  CheckCircle2, Filter, FolderOpen, Tag, Link2, Eye, Globe
+  CheckCircle2, Filter, Folder, FolderOpen, Tag, Link2, Eye, Globe
 } from 'lucide-react';
 import { useDatabaseStore } from '../stores/databaseStore';
 import { DatabaseField, FieldType, SelectOption, TableCategory, DocumentCategory } from '../types';
@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 import { DocumentDetailView } from '../components/database/DocumentDetailView';
 import { GoogleIntegrationModal } from '../components/database/GoogleIntegrationModal';
+import { DriveSidebar, DriveFoldersView } from '../components/database/DriveFolders';
 import { useAuthStore } from '../stores/authStore';
 
 const FIELD_TYPE_LABELS: Record<FieldType, string> = {
@@ -272,7 +273,7 @@ export const DatabasePage: React.FC = () => {
       <div className="w-64 flex-shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col z-10">
         {/* Fitur Selector: TABEL vs DOKUMEN */}
         <div className="p-3 border-b border-gray-100 dark:border-gray-800">
-          <div className="grid grid-cols-2 gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+          <div className="grid grid-cols-3 gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
             <button
               type="button"
               onClick={() => setActiveMode('tables')}
@@ -297,12 +298,26 @@ export const DatabasePage: React.FC = () => {
               <FileText size={14} />
               <span>Dokumen</span>
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveMode('drive')}
+              className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeMode === 'drive'
+                  ? 'bg-white dark:bg-gray-700 text-amber-600 dark:text-amber-400 shadow-xs'
+                  : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'
+              }`}
+            >
+              <Folder size={14} />
+              <span>Drive</span>
+            </button>
           </div>
         </div>
 
         {/* List Items based on Active Mode */}
         <div className="flex-1 overflow-y-auto p-3 space-y-4">
-          {activeMode === 'tables' ? (
+          {activeMode === 'drive' ? (
+            <DriveSidebar />
+          ) : activeMode === 'tables' ? (
             /* TABEL LIST (CRM, Content, Finance) */
             <div>
               <div className="flex items-center justify-between mb-2 px-1">
@@ -499,7 +514,9 @@ export const DatabasePage: React.FC = () => {
 
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {activeMode === 'tables' ? (
+        {activeMode === 'drive' ? (
+          <DriveFoldersView />
+        ) : activeMode === 'tables' ? (
           /* =========================================================================
              1. FITUR TABEL (CRM, CONTENT CALENDAR, FINANCE, DLL.)
              ========================================================================= */

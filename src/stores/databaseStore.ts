@@ -9,8 +9,8 @@ const generateId = () => Math.random().toString(36).substring(2, 9);
 
 interface DatabaseStore {
   // Active feature mode: 'tables' (CRM, Kalender, Finance) or 'documents' (SOP, Proposal, Kontrak)
-  activeMode: 'tables' | 'documents';
-  setActiveMode: (mode: 'tables' | 'documents') => void;
+  activeMode: 'tables' | 'documents' | 'drive';
+  setActiveMode: (mode: 'tables' | 'documents' | 'drive') => void;
 
   // TABEL (Spreadsheet Database)
   tables: DatabaseTable[];

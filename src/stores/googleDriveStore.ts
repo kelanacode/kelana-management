@@ -12,6 +12,7 @@ interface GoogleDriveStore {
   setConnected: (connected: boolean, email?: string, folderUrl?: string) => void;
   updateConfig: (patch: Partial<GoogleDriveConfig>) => void;
   addItem: (item: Omit<DriveItem, 'id' | 'updatedAt'>) => void;
+  updateItem: (id: string, patch: Partial<Omit<DriveItem, 'id'>>) => void;
   deleteItem: (id: string) => void;
   toggleStar: (id: string) => void;
   setSearchQuery: (query: string) => void;
@@ -67,6 +68,20 @@ export const useGoogleDriveStore = create<GoogleDriveStore>()(
         };
         set((state) => ({
           items: [newItem, ...state.items],
+        }));
+      },
+
+      updateItem: (id, patch) => {
+        set((state) => ({
+          items: state.items.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  ...patch,
+                  updatedAt: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+                }
+              : item
+          ),
         }));
       },
 
