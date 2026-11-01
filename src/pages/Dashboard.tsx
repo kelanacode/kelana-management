@@ -93,7 +93,7 @@ export const Dashboard: React.FC = () => {
     (c) => c.deadline && isBefore(parseISO(c.deadline), now) && !doneColumnIds.has(c.columnId)
   );
 
-  // Saring catatan: HANYA yang ditargetkan untuk pengguna & BELUM kedaluwarsa (otomatis terhapus setelah 2x24 jam sejak dibaca)
+  // Saring catatan: HANYA yang ditargetkan untuk pengguna & BELUM kedaluwarsa (otomatis terhapus setelah 1x24 jam sejak dibaca)
   const currentUserId = session?.user?.id;
   const recentNotes = [...notes]
     .filter((n) => checkNoteAccess(n, session?.user) && !isNoteExpiredForUser(n, currentUserId))
@@ -330,7 +330,7 @@ export const Dashboard: React.FC = () => {
                 <FileText size={16} className="text-primary-600" /> Catatan Masuk (Notes)
               </h3>
               <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                🔴 Merah: Belum dibaca • 🟢 Hijau: Sudah dibaca (terhapus otomatis dlm 2x24 jam)
+                🔴 Merah: Belum dibaca • 🟢 Hijau: Sudah dibaca (terhapus otomatis dlm 1x24 jam)
               </p>
             </div>
             <button onClick={() => navigate('/notes')} className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1 font-medium cursor-pointer">
@@ -340,7 +340,7 @@ export const Dashboard: React.FC = () => {
           <div className="space-y-2.5">
             {recentNotes.length === 0 ? (
               <div className="p-6 text-center text-xs text-gray-500 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
-                Tidak ada catatan baru yang ditujukan untuk Anda atau semua catatan telah terhapus otomatis setelah 2x24 jam.
+                Tidak ada catatan baru yang ditujukan untuk Anda atau semua catatan telah terhapus otomatis setelah 1x24 jam.
               </div>
             ) : (
               recentNotes.map((note) => {
@@ -380,10 +380,10 @@ export const Dashboard: React.FC = () => {
                             </span>
                           )}
 
-                          {/* Informasi Kedaluwarsa 2x24 Jam jika sudah dibaca */}
+                          {/* Informasi Kedaluwarsa 1x24 Jam jika sudah dibaca */}
                           {isRead && remainingHours !== null && (
                             <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/50">
-                              ⏳ Terhapus dlm {remainingHours} jam lagi (2x24 jam)
+                              ⏳ Terhapus dlm {remainingHours} jam lagi (1x24 jam)
                             </span>
                           )}
 

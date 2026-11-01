@@ -23,8 +23,10 @@ const STICKY_COLORS = [
 ];
 
 export const Notes: React.FC = () => {
-  const { session } = useAuthStore();
+  const { session, users } = useAuthStore();
   const currentUser = session?.user;
+  const activeEmployees = users.filter((u) => u.status === 'Active').sort((a, b) => a.name.localeCompare(b.name));
+  const divisionOptions = Array.from(new Set(activeEmployees.map((u) => u.division).filter(Boolean))).sort();
   const currentUserId = currentUser?.id;
 
   const {
@@ -46,6 +48,9 @@ export const Notes: React.FC = () => {
   const [newContent, setNewContent] = useState('');
   const [newColor, setNewColor] = useState(STICKY_COLORS[0].bg);
   const [newTags, setNewTags] = useState('');
+  const [newScope, setNewScope] = useState<'all' | 'division' | 'specific_users'>('all');
+  const [newDivision, setNewDivision] = useState('');
+  const [newRecipientIds, setNewRecipientIds] = useState<string[]>([]);
 
   // Editing Sticky Note State
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
@@ -56,6 +61,8 @@ export const Notes: React.FC = () => {
   const handleCreateSticky = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() && !newContent.trim()) return;
+    if (newScope === 'division' && !newDivision) return;
+    if (newScope === 'specific_users' && newRecipientIds.length === 0) return;
 
     const created = addNote(
       newTitle.trim() || 'Sticky Note Baru',
@@ -65,7 +72,13 @@ export const Notes: React.FC = () => {
         division: currentUser?.division || 'Umum',
       },
       {
-        shareScope: 'all',
+        shareScope: newScope,
+        targetDivisions: newScope === 'division' ? [newDivision] : [],
+        targetUserIds: newScope === 'specific_users' ? newRecipientIds : [],
+        targetUserNames:
+          newScope === 'specific_users'
+            ? newRecipientIds.map((id) => activeEmployees.find((u) => u.id === id)?.name ?? '')
+            : [],
       }
     );
 
@@ -80,7 +93,21 @@ export const Notes: React.FC = () => {
     setNewContent('');
     setNewTags('');
     setNewColor(STICKY_COLORS[0].bg);
+    setNewScope('all');
+    setNewDivision('');
+    setNewRecipientIds([]);
     setIsCreating(false);
+  };
+
+  // Label "untuk siapa" pada sticky note
+  const recipientLabel = (note: Note) => {
+    if (note.shareScope === 'division') return `Divisi ${(note.targetDivisions ?? []).join(', ') || '-'}`;
+    if (note.shareScope === 'specific_users') {
+      const names = note.targetUserNames?.filter(Boolean) ?? [];
+      if (names.length === 0) return 'Orang tertentu';
+      return names.length <= 2 ? names.join(', ') : `${names.slice(0, 2).join(', ')} +${names.length - 2}`;
+    }
+    return 'Semua Karyawan';
   };
 
   const startEditNote = (note: Note) => {
@@ -216,7 +243,7 @@ export const Notes: React.FC = () => {
         </div>
 
         <span className="text-[11px] text-slate-400 hidden sm:inline">
-          Otomatis kedaluwarsa 2x24 jam setelah dibaca
+          Otomatis terhapus 1x24 jam setelah dibuka
         </span>
       </div>
 
@@ -380,8 +407,13 @@ export const Notes: React.FC = () => {
 
                   {/* Note Footer: Author, Expiry & Double click hint */}
                   <div className="mt-4 pt-3 border-t border-black/10 flex items-center justify-between text-[10px] text-slate-700/80">
-                    <span className="truncate max-w-[120px] font-semibold">
-                      👤 {note.authorName || 'Staff'}
+                    <span className="min-w-0 flex flex-col gap-0.5">
+                      <span className="truncate font-semibold" title={`Dari: ${note.authorName || 'Staff'}`}>
+                        ✍️ Dari: {note.authorName || 'Staff'}
+                      </span>
+                      <span className="truncate font-semibold" title={`Untuk: ${recipientLabel(note)}`}>
+                        📨 Untuk: {recipientLabel(note)}
+                      </span>
                     </span>
                     <span className="font-bold flex items-center gap-1">
                       ⏳ {remainingHours} Jam
@@ -435,6 +467,79 @@ export const Notes: React.FC = () => {
                 />
               </div>
 
+              {/* Dari & Untuk */}
+              <div className="space-y-2 rounded-xl bg-white/60 border border-black/10 p-3 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-12 font-bold text-slate-800">Dari</span>
+                  <span className="font-semibold text-slate-900">
+                    {currentUser?.name || 'Staff'}
+                    <span className="font-normal text-slate-600"> · {currentUser?.position || currentUser?.role}</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-12 font-bold text-slate-800">Untuk</span>
+                  <select
+                    value={newScope}
+                    onChange={(e) => setNewScope(e.target.value as typeof newScope)}
+                    className="flex-1 px-2.5 py-1.5 rounded-lg bg-white border border-black/10 text-slate-900 outline-none"
+                  >
+                    <option value="all">Semua Karyawan</option>
+                    <option value="division">Divisi tertentu</option>
+                    <option value="specific_users">Orang tertentu</option>
+                  </select>
+                </div>
+                {newScope === 'division' && (
+                  <select
+                    value={newDivision}
+                    onChange={(e) => setNewDivision(e.target.value)}
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-black/10 text-slate-900 outline-none"
+                  >
+                    <option value="">Pilih divisi...</option>
+                    {divisionOptions.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                )}
+                {newScope === 'specific_users' && (
+                  <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
+                    {activeEmployees
+                      .filter((u) => u.id !== currentUser?.id)
+                      .map((u) => {
+                        const selected = newRecipientIds.includes(u.id);
+                        return (
+                          <button
+                            key={u.id}
+                            type="button"
+                            aria-pressed={selected}
+                            onClick={() =>
+                              setNewRecipientIds(
+                                selected ? newRecipientIds.filter((id) => id !== u.id) : [...newRecipientIds, u.id]
+                              )
+                            }
+                            className={`flex items-center gap-1 pl-0.5 pr-2 py-0.5 rounded-full border-2 transition-all ${
+                              selected
+                                ? 'bg-slate-900 border-slate-900 text-white font-semibold'
+                                : 'bg-white border-black/10 text-slate-700 hover:border-slate-400'
+                            }`}
+                          >
+                            <span
+                              className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold"
+                              style={{ backgroundColor: u.color }}
+                            >
+                              {u.avatar}
+                            </span>
+                            {u.name}
+                          </button>
+                        );
+                      })}
+                  </div>
+                )}
+                {newScope === 'division' && !newDivision && <p className="text-[10px] text-rose-600">Pilih divisi tujuan.</p>}
+                {newScope === 'specific_users' && newRecipientIds.length === 0 && (
+                  <p className="text-[10px] text-rose-600">Pilih minimal satu penerima.</p>
+                )}
+              </div>
+
               <div>
                 <input
                   type="text"
@@ -474,7 +579,11 @@ export const Notes: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={!newTitle.trim() && !newContent.trim()}
+                  disabled={
+                    (!newTitle.trim() && !newContent.trim()) ||
+                    (newScope === 'division' && !newDivision) ||
+                    (newScope === 'specific_users' && newRecipientIds.length === 0)
+                  }
                   className="px-5 py-2 bg-slate-950 text-white font-bold text-xs rounded-xl shadow-md hover:bg-slate-800 disabled:opacity-50"
                 >
                   Tempel Catatan 📌

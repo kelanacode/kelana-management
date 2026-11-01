@@ -4,8 +4,8 @@ import { Note, NoteComment, NoteShareScope, NoteReadRecord } from '../types';
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
-// 2x24 Jam dalam milidetik (48 Jam)
-export const NOTE_EXPIRY_MS = 48 * 60 * 60 * 1000;
+// 1x24 Jam dalam milidetik: catatan hilang 24 jam setelah dibuka penerimanya
+export const NOTE_EXPIRY_MS = 24 * 60 * 60 * 1000;
 
 export const checkNoteAccess = (
   note: Note,
@@ -65,11 +65,11 @@ export const getNoteReadRecord = (note: Note, userId?: string): NoteReadRecord |
   return note.readRecords.find((r) => r.userId === userId);
 };
 
-// Hitung apakah catatan sudah kedaluwarsa (otomatis terhapus setelah 2x24 jam dari waktu dibaca)
+// Hitung apakah catatan sudah kedaluwarsa (otomatis terhapus setelah 1x24 jam dari waktu dibaca)
 export const isNoteExpiredForUser = (note: Note, userId?: string): boolean => {
   if (!userId) return false;
   const readRecord = getNoteReadRecord(note, userId);
-  if (!readRecord) return false; // Belum dibaca, jadi belum mulai hitungan 48 jam
+  if (!readRecord) return false; // Belum dibaca, jadi belum mulai hitungan 24 jam
 
   const readTime = new Date(readRecord.readAt).getTime();
   const diff = Date.now() - readTime;
@@ -78,9 +78,9 @@ export const isNoteExpiredForUser = (note: Note, userId?: string): boolean => {
 
 // Hitung sisa jam sebelum terhapus otomatis (dalam satuan jam)
 export const getNoteRemainingHours = (note: Note, userId?: string): number => {
-  if (!userId) return 48;
+  if (!userId) return 24;
   const readRecord = getNoteReadRecord(note, userId);
-  if (!readRecord) return 48;
+  if (!readRecord) return 24;
 
   const readTime = new Date(readRecord.readAt).getTime();
   const diff = Date.now() - readTime;
