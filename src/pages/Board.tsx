@@ -9,6 +9,7 @@ import {
   useSensor,
   useSensors,
   closestCorners,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -144,14 +145,22 @@ const CardModal: React.FC<{ card: Card; onClose: () => void }> = ({ card, onClos
                           : [...card.assignees, member.id];
                         updateCard(card.id, { assignees: newAssignees });
                       }}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                        assigned ? 'bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-700' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
+                      aria-pressed={assigned}
+                      title={assigned ? `Hapus ${member.name} dari tugas ini` : `Tugaskan ke ${member.name}`}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all border-2 ${
+                        assigned
+                          ? 'bg-primary-600 border-primary-600 text-white font-semibold shadow-md shadow-primary-600/30'
+                          : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 opacity-70 hover:opacity-100'
                       }`}
                     >
-                      <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: member.color }}>
+                      <div
+                        className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold ${assigned ? 'ring-2 ring-white' : ''}`}
+                        style={{ backgroundColor: member.color }}
+                      >
                         {member.avatar}
                       </div>
-                      <span className="text-gray-700 dark:text-gray-200">{member.name.split(' ')[0]}</span>
+                      <span>{member.name.split(' ')[0]}</span>
+                      {assigned && <Check size={14} className="-mr-0.5" />}
                     </button>
                   );
                 })}
@@ -309,6 +318,8 @@ const KanbanColumnComponent: React.FC<{
   cards: Card[];
   onCardClick: (card: Card) => void;
 }> = ({ column, cards, onCardClick }) => {
+  // Seluruh area kolom bisa menjadi tujuan drop, termasuk saat kolom masih kosong
+  const { setNodeRef: setDropRef, isOver } = useDroppable({ id: column.id });
   const { addCard, deleteColumn, updateColumn } = useBoardStore();
   const [addingCard, setAddingCard] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState('');
@@ -354,7 +365,10 @@ const KanbanColumnComponent: React.FC<{
       </div>
 
       {/* Cards */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2 min-h-[100px]">
+      <div
+        ref={setDropRef}
+        className={`flex-1 overflow-y-auto p-3 space-y-2 min-h-[100px] transition-colors ${isOver ? 'bg-primary-50/70 dark:bg-primary-900/20' : ''}`}
+      >
         <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
           {cards.map((card) => (
             <SortableCard key={card.id} card={card} onClick={() => onCardClick(card)} />
@@ -461,6 +475,16 @@ export const Board: React.FC = () => {
     const overCard = cards.find((c) => c.id === over.id);
 
     if (!activeCard) return;
+
+    // Dilepas di area kolom: kartu ditaruh paling bawah kolom itu
+    const overColumn = columns.find((c) => c.id === over.id);
+    if (overColumn) {
+      const target = getColumnCards(overColumn.id).filter((c) => c.id !== activeCard.id);
+      [...target, activeCard].forEach((card, idx) =>
+        updateCard(card.id, { columnId: overColumn.id, order: idx })
+      );
+      return;
+    }
 
     if (overCard && activeCard.columnId === overCard.columnId) {
       const colCards = getColumnCards(activeCard.columnId);
