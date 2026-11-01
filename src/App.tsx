@@ -10,6 +10,7 @@ import { Team } from './pages/Team';
 import { AttendancePage } from './pages/Attendance';
 import { FinancePage } from './pages/Finance';
 import { TasksPage } from './pages/Tasks';
+import { AssetsPage } from './pages/Assets';
 import { Login } from './pages/Login';
 import { ActivateAccount } from './pages/ActivateAccount';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -36,6 +37,7 @@ function App() {
                   <Route path="/notes" element={<Notes />} />
                   <Route path="/board" element={<Board />} />
                   <Route path="/database" element={<DatabasePage />} />
+                  <Route path="/assets" element={<AssetsPage />} />
                   <Route path="/calendar" element={<CalendarPage />} />
                   <Route path="/reminders" element={<Navigate to="/calendar" replace />} />
                   <Route path="/team" element={<Team />} />

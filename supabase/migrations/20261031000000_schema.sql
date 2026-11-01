@@ -1065,6 +1065,291 @@ drop policy if exists "members_all" on public.drive_items;
 create policy "members_all" on public.drive_items for all to authenticated
   using (public.is_active_member()) with check (public.is_active_member());
 
+create table if not exists public.assets (
+  id text primary key,
+  code text,
+  "name" text,
+  category text,
+  sub_category text,
+  brand text,
+  model text,
+  serial_number text,
+  specs text,
+  vendor text,
+  invoice_number text,
+  purchase_date text,
+  purchase_price numeric,
+  salvage_value numeric,
+  useful_life_years numeric,
+  warranty_until text,
+  location text,
+  status text,
+  "condition" text,
+  assigned_to_id text,
+  assigned_to_name text,
+  division text,
+  maintenance_interval_days numeric,
+  next_maintenance_date text,
+  license_key text,
+  license_expiry text,
+  digital_url text,
+  notes text,
+  last_audit_at text,
+  last_audit_by text,
+  disposal jsonb,
+  history jsonb,
+  created_by text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  inserted_at timestamptz not null default now()
+);
+alter table public.assets add column if not exists code text;
+alter table public.assets add column if not exists "name" text;
+alter table public.assets add column if not exists category text;
+alter table public.assets add column if not exists sub_category text;
+alter table public.assets add column if not exists brand text;
+alter table public.assets add column if not exists model text;
+alter table public.assets add column if not exists serial_number text;
+alter table public.assets add column if not exists specs text;
+alter table public.assets add column if not exists vendor text;
+alter table public.assets add column if not exists invoice_number text;
+alter table public.assets add column if not exists purchase_date text;
+alter table public.assets add column if not exists purchase_price numeric;
+alter table public.assets add column if not exists salvage_value numeric;
+alter table public.assets add column if not exists useful_life_years numeric;
+alter table public.assets add column if not exists warranty_until text;
+alter table public.assets add column if not exists location text;
+alter table public.assets add column if not exists status text;
+alter table public.assets add column if not exists "condition" text;
+alter table public.assets add column if not exists assigned_to_id text;
+alter table public.assets add column if not exists assigned_to_name text;
+alter table public.assets add column if not exists division text;
+alter table public.assets add column if not exists maintenance_interval_days numeric;
+alter table public.assets add column if not exists next_maintenance_date text;
+alter table public.assets add column if not exists license_key text;
+alter table public.assets add column if not exists license_expiry text;
+alter table public.assets add column if not exists digital_url text;
+alter table public.assets add column if not exists notes text;
+alter table public.assets add column if not exists last_audit_at text;
+alter table public.assets add column if not exists last_audit_by text;
+alter table public.assets add column if not exists disposal jsonb;
+alter table public.assets add column if not exists history jsonb;
+alter table public.assets add column if not exists created_by text;
+alter table public.assets add column if not exists created_at timestamptz;
+alter table public.assets add column if not exists updated_at timestamptz;
+alter table public.assets enable row level security;
+drop policy if exists "members_all" on public.assets;
+create policy "members_all" on public.assets for all to authenticated
+  using (public.is_active_member()) with check (public.is_active_member());
+
+create table if not exists public.asset_loans (
+  id text primary key,
+  asset_id text,
+  asset_code text,
+  asset_name text,
+  borrower_id text,
+  borrower_name text,
+  purpose text,
+  location text,
+  checkout_at text,
+  due_date text,
+  condition_out text,
+  returned_at text,
+  condition_in text,
+  return_notes text,
+  status text,
+  handled_by text,
+  created_at timestamptz not null default now(),
+  inserted_at timestamptz not null default now()
+);
+alter table public.asset_loans add column if not exists asset_id text;
+alter table public.asset_loans add column if not exists asset_code text;
+alter table public.asset_loans add column if not exists asset_name text;
+alter table public.asset_loans add column if not exists borrower_id text;
+alter table public.asset_loans add column if not exists borrower_name text;
+alter table public.asset_loans add column if not exists purpose text;
+alter table public.asset_loans add column if not exists location text;
+alter table public.asset_loans add column if not exists checkout_at text;
+alter table public.asset_loans add column if not exists due_date text;
+alter table public.asset_loans add column if not exists condition_out text;
+alter table public.asset_loans add column if not exists returned_at text;
+alter table public.asset_loans add column if not exists condition_in text;
+alter table public.asset_loans add column if not exists return_notes text;
+alter table public.asset_loans add column if not exists status text;
+alter table public.asset_loans add column if not exists handled_by text;
+alter table public.asset_loans add column if not exists created_at timestamptz;
+alter table public.asset_loans enable row level security;
+drop policy if exists "members_all" on public.asset_loans;
+create policy "members_all" on public.asset_loans for all to authenticated
+  using (public.is_active_member()) with check (public.is_active_member());
+
+create table if not exists public.asset_maintenance (
+  id text primary key,
+  ticket_number text,
+  asset_id text,
+  asset_code text,
+  asset_name text,
+  "type" text,
+  issue text,
+  reported_by text,
+  vendor text,
+  cost numeric,
+  scheduled_date text,
+  started_at text,
+  finished_at text,
+  status text,
+  notes text,
+  created_at timestamptz not null default now(),
+  inserted_at timestamptz not null default now()
+);
+alter table public.asset_maintenance add column if not exists ticket_number text;
+alter table public.asset_maintenance add column if not exists asset_id text;
+alter table public.asset_maintenance add column if not exists asset_code text;
+alter table public.asset_maintenance add column if not exists asset_name text;
+alter table public.asset_maintenance add column if not exists "type" text;
+alter table public.asset_maintenance add column if not exists issue text;
+alter table public.asset_maintenance add column if not exists reported_by text;
+alter table public.asset_maintenance add column if not exists vendor text;
+alter table public.asset_maintenance add column if not exists cost numeric;
+alter table public.asset_maintenance add column if not exists scheduled_date text;
+alter table public.asset_maintenance add column if not exists started_at text;
+alter table public.asset_maintenance add column if not exists finished_at text;
+alter table public.asset_maintenance add column if not exists status text;
+alter table public.asset_maintenance add column if not exists notes text;
+alter table public.asset_maintenance add column if not exists created_at timestamptz;
+alter table public.asset_maintenance enable row level security;
+drop policy if exists "members_all" on public.asset_maintenance;
+create policy "members_all" on public.asset_maintenance for all to authenticated
+  using (public.is_active_member()) with check (public.is_active_member());
+
+create table if not exists public.asset_requests (
+  id text primary key,
+  request_number text,
+  item_name text,
+  category text,
+  quantity numeric,
+  estimated_price numeric,
+  reason text,
+  department text,
+  requester_id text,
+  requester_name text,
+  stock_note text,
+  vendor_quotes jsonb,
+  selected_vendor text,
+  status text,
+  decided_by text,
+  decision_notes text,
+  supply_id text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  inserted_at timestamptz not null default now()
+);
+alter table public.asset_requests add column if not exists request_number text;
+alter table public.asset_requests add column if not exists item_name text;
+alter table public.asset_requests add column if not exists category text;
+alter table public.asset_requests add column if not exists quantity numeric;
+alter table public.asset_requests add column if not exists estimated_price numeric;
+alter table public.asset_requests add column if not exists reason text;
+alter table public.asset_requests add column if not exists department text;
+alter table public.asset_requests add column if not exists requester_id text;
+alter table public.asset_requests add column if not exists requester_name text;
+alter table public.asset_requests add column if not exists stock_note text;
+alter table public.asset_requests add column if not exists vendor_quotes jsonb;
+alter table public.asset_requests add column if not exists selected_vendor text;
+alter table public.asset_requests add column if not exists status text;
+alter table public.asset_requests add column if not exists decided_by text;
+alter table public.asset_requests add column if not exists decision_notes text;
+alter table public.asset_requests add column if not exists supply_id text;
+alter table public.asset_requests add column if not exists created_at timestamptz;
+alter table public.asset_requests add column if not exists updated_at timestamptz;
+alter table public.asset_requests enable row level security;
+drop policy if exists "members_all" on public.asset_requests;
+create policy "members_all" on public.asset_requests for all to authenticated
+  using (public.is_active_member()) with check (public.is_active_member());
+
+create table if not exists public.asset_audits (
+  id text primary key,
+  title text,
+  location text,
+  status text,
+  started_by text,
+  started_at text,
+  finished_at text,
+  scans jsonb,
+  created_at timestamptz not null default now(),
+  inserted_at timestamptz not null default now()
+);
+alter table public.asset_audits add column if not exists title text;
+alter table public.asset_audits add column if not exists location text;
+alter table public.asset_audits add column if not exists status text;
+alter table public.asset_audits add column if not exists started_by text;
+alter table public.asset_audits add column if not exists started_at text;
+alter table public.asset_audits add column if not exists finished_at text;
+alter table public.asset_audits add column if not exists scans jsonb;
+alter table public.asset_audits add column if not exists created_at timestamptz;
+alter table public.asset_audits enable row level security;
+drop policy if exists "members_all" on public.asset_audits;
+create policy "members_all" on public.asset_audits for all to authenticated
+  using (public.is_active_member()) with check (public.is_active_member());
+
+create table if not exists public.supplies (
+  id text primary key,
+  sku text,
+  "name" text,
+  category text,
+  unit text,
+  stock numeric,
+  min_stock numeric,
+  reorder_qty numeric,
+  location text,
+  unit_price numeric,
+  vendor text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  inserted_at timestamptz not null default now()
+);
+alter table public.supplies add column if not exists sku text;
+alter table public.supplies add column if not exists "name" text;
+alter table public.supplies add column if not exists category text;
+alter table public.supplies add column if not exists unit text;
+alter table public.supplies add column if not exists stock numeric;
+alter table public.supplies add column if not exists min_stock numeric;
+alter table public.supplies add column if not exists reorder_qty numeric;
+alter table public.supplies add column if not exists location text;
+alter table public.supplies add column if not exists unit_price numeric;
+alter table public.supplies add column if not exists vendor text;
+alter table public.supplies add column if not exists created_at timestamptz;
+alter table public.supplies add column if not exists updated_at timestamptz;
+alter table public.supplies enable row level security;
+drop policy if exists "members_all" on public.supplies;
+create policy "members_all" on public.supplies for all to authenticated
+  using (public.is_active_member()) with check (public.is_active_member());
+
+create table if not exists public.supply_movements (
+  id text primary key,
+  supply_id text,
+  supply_name text,
+  "type" text,
+  quantity numeric,
+  stock_after numeric,
+  note text,
+  user_name text,
+  created_at timestamptz not null default now(),
+  inserted_at timestamptz not null default now()
+);
+alter table public.supply_movements add column if not exists supply_id text;
+alter table public.supply_movements add column if not exists supply_name text;
+alter table public.supply_movements add column if not exists "type" text;
+alter table public.supply_movements add column if not exists quantity numeric;
+alter table public.supply_movements add column if not exists stock_after numeric;
+alter table public.supply_movements add column if not exists note text;
+alter table public.supply_movements add column if not exists user_name text;
+alter table public.supply_movements add column if not exists created_at timestamptz;
+alter table public.supply_movements enable row level security;
+drop policy if exists "members_all" on public.supply_movements;
+create policy "members_all" on public.supply_movements for all to authenticated
+  using (public.is_active_member()) with check (public.is_active_member());
+
 create table if not exists public.activities (
   id text primary key,
   member_id text,
@@ -1086,7 +1371,7 @@ create policy "members_all" on public.activities for all to authenticated
 do $$
 declare t text;
 begin
-  foreach t in array array['profiles', 'bank_accounts', 'journal_entries', 'purchase_requisitions', 'purchase_orders', 'sales_orders', 'inventory_items', 'fixed_assets', 'payroll_records', 'department_budgets', 'expense_claims', 'budget_requisitions', 'p2p_cases', 'company_tasks', 'attendance_records', 'attendance_corrections', 'event_reminders', 'boards', 'board_columns', 'board_cards', 'notes', 'workspace_tables', 'workspace_documents', 'drive_items', 'activities'] loop
+  foreach t in array array['profiles', 'bank_accounts', 'journal_entries', 'purchase_requisitions', 'purchase_orders', 'sales_orders', 'inventory_items', 'fixed_assets', 'payroll_records', 'department_budgets', 'expense_claims', 'budget_requisitions', 'p2p_cases', 'company_tasks', 'attendance_records', 'attendance_corrections', 'event_reminders', 'boards', 'board_columns', 'board_cards', 'notes', 'workspace_tables', 'workspace_documents', 'drive_items', 'assets', 'asset_loans', 'asset_maintenance', 'asset_requests', 'asset_audits', 'supplies', 'supply_movements', 'activities'] loop
     if not exists (
       select 1 from pg_publication_tables
       where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t

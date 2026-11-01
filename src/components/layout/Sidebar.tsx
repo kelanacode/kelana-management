@@ -18,12 +18,14 @@ import {
   ShieldCheck,
   DollarSign,
   CheckSquare,
+  Package,
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { useBoardStore } from '../../stores/boardStore';
 import { useNotesStore } from '../../stores/notesStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useFeatureStore, canSeeLockedFeatures } from '../../stores/featureStore';
+import { canAccessAssets } from '../../utils/assetUtils';
 import { AccountManagementModal } from '../auth/AccountManagementModal';
 import { ProfilePersonalizationModal } from '../profile/ProfilePersonalizationModal';
 
@@ -77,6 +79,7 @@ export const Sidebar: React.FC = () => {
     { to: '/notes', icon: FileText, label: 'Notes' },
     { to: '/board', icon: Kanban, label: 'Kanban Board' },
     { to: '/database', icon: Database, label: 'Database' },
+    ...(canAccessAssets(anyUser) ? [{ to: '/assets', icon: Package, label: 'Manajemen Aset' }] : []),
       { to: '/calendar', icon: Calendar, label: 'Kalender' },
     { to: '/team', icon: Users, label: 'Tim' },
   ];

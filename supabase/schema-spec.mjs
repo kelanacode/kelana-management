@@ -107,6 +107,36 @@ export const TABLES = [
     fields: ['name', 'type', 'mimeType', 'size', 'updatedAt', 'url', 'author', 'division', 'tags:j', 'isStarred:b'],
   },
 
+  // ---------- Manajemen Aset ----------
+  {
+    table: 'assets', store: 'asset', key: 'assets',
+    fields: ['code', 'name', 'category', 'subCategory', 'brand', 'model', 'serialNumber', 'specs', 'vendor', 'invoiceNumber', 'purchaseDate', 'purchasePrice:n', 'salvageValue:n', 'usefulLifeYears:n', 'warrantyUntil', 'location', 'status', 'condition', 'assignedToId', 'assignedToName', 'division', 'maintenanceIntervalDays:n', 'nextMaintenanceDate', 'licenseKey', 'licenseExpiry', 'digitalUrl', 'notes', 'lastAuditAt', 'lastAuditBy', 'disposal:j', 'history:j', 'createdBy', 'createdAt:ts', 'updatedAt:ts'],
+  },
+  {
+    table: 'asset_loans', store: 'asset', key: 'loans',
+    fields: ['assetId', 'assetCode', 'assetName', 'borrowerId', 'borrowerName', 'purpose', 'location', 'checkoutAt', 'dueDate', 'conditionOut', 'returnedAt', 'conditionIn', 'returnNotes', 'status', 'handledBy', 'createdAt:ts'],
+  },
+  {
+    table: 'asset_maintenance', store: 'asset', key: 'maintenance',
+    fields: ['ticketNumber', 'assetId', 'assetCode', 'assetName', 'type', 'issue', 'reportedBy', 'vendor', 'cost:n', 'scheduledDate', 'startedAt', 'finishedAt', 'status', 'notes', 'createdAt:ts'],
+  },
+  {
+    table: 'asset_requests', store: 'asset', key: 'requests',
+    fields: ['requestNumber', 'itemName', 'category', 'quantity:n', 'estimatedPrice:n', 'reason', 'department', 'requesterId', 'requesterName', 'stockNote', 'vendorQuotes:j', 'selectedVendor', 'status', 'decidedBy', 'decisionNotes', 'supplyId', 'createdAt:ts', 'updatedAt:ts'],
+  },
+  {
+    table: 'asset_audits', store: 'asset', key: 'audits',
+    fields: ['title', 'location', 'status', 'startedBy', 'startedAt', 'finishedAt', 'scans:j', 'createdAt:ts'],
+  },
+  {
+    table: 'supplies', store: 'asset', key: 'supplies',
+    fields: ['sku', 'name', 'category', 'unit', 'stock:n', 'minStock:n', 'reorderQty:n', 'location', 'unitPrice:n', 'vendor', 'createdAt:ts', 'updatedAt:ts'],
+  },
+  {
+    table: 'supply_movements', store: 'asset', key: 'supplyMovements',
+    fields: ['supplyId', 'supplyName', 'type', 'quantity:n', 'stockAfter:n', 'note', 'userName', 'createdAt:ts'],
+  },
+
   // ---------- Tim ----------
   // Chat ada di migrasi tersendiri (chat_rooms, chat_room_members, chat_room_messages).
   {

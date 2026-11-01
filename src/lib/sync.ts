@@ -10,6 +10,7 @@ import type { StoreApi, UseBoundStore } from 'zustand';
 import { supabase } from './supabase';
 import { TABLES, type ColumnMap, type TableSpec } from './dbSchema';
 import { useAppStore } from '../stores/appStore';
+import { useAssetStore } from '../stores/assetStore';
 import { useAttendanceStore } from '../stores/attendanceStore';
 import { useBoardStore } from '../stores/boardStore';
 import { useBudgetRequisitionStore } from '../stores/budgetRequisitionStore';
@@ -26,6 +27,7 @@ type Item = { id: string } & Record<string, any>;
 
 const STORES: Record<string, AnyStore> = {
   app: useAppStore,
+  asset: useAssetStore,
   attendance: useAttendanceStore,
   board: useBoardStore,
   budgetRequisition: useBudgetRequisitionStore,
