@@ -335,7 +335,7 @@ const KanbanColumnComponent: React.FC<{
   };
 
   return (
-    <div className="flex flex-col w-72 flex-shrink-0 bg-gray-50 dark:bg-gray-800/50 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+    <div className="flex flex-col w-72 flex-shrink-0 max-h-full bg-gray-50 dark:bg-gray-800/50 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
       {/* Column Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -367,7 +367,7 @@ const KanbanColumnComponent: React.FC<{
       {/* Cards */}
       <div
         ref={setDropRef}
-        className={`flex-1 overflow-y-auto p-3 space-y-2 min-h-[100px] transition-colors ${isOver ? 'bg-primary-50/70 dark:bg-primary-900/20' : ''}`}
+        className={`flex-1 min-h-[100px] overflow-y-auto overscroll-contain p-3 space-y-2 transition-colors ${isOver ? 'bg-primary-50/70 dark:bg-primary-900/20' : ''}`}
       >
         <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
           {cards.map((card) => (
@@ -617,7 +617,7 @@ export const Board: React.FC = () => {
       </div>
 
       {/* Board Content */}
-      <div className="flex-1 overflow-hidden flex flex-col">
+      <div className="flex-1 min-w-0 overflow-hidden flex flex-col">
         {currentBoard && (
           <div className="px-6 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -701,7 +701,7 @@ export const Board: React.FC = () => {
           </div>
         )}
 
-        <div className={`flex-1 overflow-x-auto overflow-y-hidden p-6 ${currentBoard ? '' : 'hidden'}`}>
+        <div className={`flex-1 min-h-0 overflow-x-auto overflow-y-hidden p-6 ${currentBoard ? '' : 'hidden'}`}>
           <DndContext
             sensors={sensors}
             collisionDetection={closestCorners}
@@ -709,7 +709,7 @@ export const Board: React.FC = () => {
             onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
           >
-            <div className="flex gap-4 h-full items-start">
+            <div className="flex gap-4 h-full items-start w-max pb-2">
               {boardColumns.map((column) => (
                 <KanbanColumnComponent
                   key={column.id}
