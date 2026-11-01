@@ -96,7 +96,8 @@ export const Dashboard: React.FC = () => {
   // Saring catatan: HANYA yang ditargetkan untuk pengguna & BELUM kedaluwarsa (otomatis terhapus setelah 1x24 jam sejak dibaca)
   const currentUserId = session?.user?.id;
   const recentNotes = [...notes]
-    .filter((n) => checkNoteAccess(n, session?.user) && !isNoteExpiredForUser(n, currentUserId))
+    // Catatan Masuk hanya untuk penerima: catatan yang dibuat sendiri tidak ditampilkan
+    .filter((n) => n.authorId !== currentUserId && checkNoteAccess(n, session?.user) && !isNoteExpiredForUser(n, currentUserId))
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
     .slice(0, 5);
 
