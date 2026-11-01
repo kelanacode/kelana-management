@@ -3379,8 +3379,8 @@ export const FinancePage: React.FC = () => {
                   <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Pagu Anggaran (Rp)</label>
                   <input
                     type="number"
-                    min="1000000"
-                    step="1000000"
+                    min="100000"
+                    step="1000"
                     required
                     value={budgetForm.allocatedBudget}
                     onChange={(e) => setBudgetForm({ ...budgetForm, allocatedBudget: Number(e.target.value) })}
@@ -3485,8 +3485,8 @@ export const FinancePage: React.FC = () => {
                   <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Pagu Anggaran (Rp)</label>
                   <input
                     type="number"
-                    min="1000000"
-                    step="1000000"
+                    min="100000"
+                    step="1000"
                     required
                     value={editingBudget.allocatedBudget}
                     onChange={(e) => setEditingBudget({ ...editingBudget, allocatedBudget: Number(e.target.value) })}
