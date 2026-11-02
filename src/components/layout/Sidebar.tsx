@@ -48,7 +48,8 @@ export const Sidebar: React.FC = () => {
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
 
-  const collapsed = settings.sidebarCollapsed;
+  const isDesktop = typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
+  const collapsed = isDesktop && (settings.sidebarCollapsed);
   // Use session user if available, fallback to default setting
   const user = session?.user || settings.currentUser;
 
@@ -91,9 +92,10 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside
-      className={`flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${
-        collapsed ? 'w-16' : 'w-64'
-      }`}
+      className={`flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300
+        fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] md:static md:z-auto md:max-w-none
+        ${isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'} md:translate-x-0 md:shadow-none
+        ${collapsed ? 'md:w-16' : 'md:w-64'}`}
     >
       {/* Logo */}
       <div className="flex items-center justify-between p-3.5 border-b border-gray-100 dark:border-gray-700">

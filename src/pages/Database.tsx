@@ -268,9 +268,9 @@ export const DatabasePage: React.FC = () => {
   });
 
   return (
-    <div className="flex h-full overflow-hidden bg-gray-50 dark:bg-gray-950">
+    <div className="flex flex-col md:flex-row h-full overflow-hidden bg-gray-50 dark:bg-gray-950">
       {/* SIDEBAR DATABASE: 2 FITUR UTAMA (TABEL & DOKUMEN) */}
-      <div className="w-64 flex-shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col z-10">
+      <div className="w-full md:w-64 max-h-56 md:max-h-none overflow-y-auto flex-shrink-0 bg-white dark:bg-gray-900 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-800 flex flex-col z-10">
         {/* Fitur Selector: TABEL vs DOKUMEN */}
         <div className="p-3 border-b border-gray-100 dark:border-gray-800">
           <div className="grid grid-cols-3 gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">

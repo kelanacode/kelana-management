@@ -10,7 +10,7 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { settings } = useAppStore();
+  const { settings, isMobileSidebarOpen, setMobileSidebarOpen } = useAppStore();
 
   // Apply dark mode class to root <html> and <body>
   useEffect(() => {
@@ -25,7 +25,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className={`min-h-screen ${settings.theme === 'dark' ? 'dark bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-[100dvh] overflow-hidden">
+        {/* Latar gelap saat menu dibuka di ponsel */}
+        {isMobileSidebarOpen && (
+          <div className="fixed inset-0 z-40 bg-black/40 md:hidden" onClick={() => setMobileSidebarOpen(false)} aria-hidden="true" />
+        )}
         <Sidebar />
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
           <Header />

@@ -1,3 +1,6 @@
+Options -Indexes
+ServerSignature Off
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
@@ -5,6 +8,9 @@
   # Paksa HTTPS
   RewriteCond %{HTTPS} off
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Tolak akses ke file tersembunyi (.env, .git, dll.)
+  RewriteRule (^|/)\.(?!well-known/) - [F,L]
 
   # SPA fallback untuk React Router
   RewriteRule ^index\.html$ - [L]
@@ -18,12 +24,26 @@
   AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
 </IfModule>
 
-# Cache: file di /assets punya hash, aman di-cache lama; index.html jangan di-cache
 <IfModule mod_headers.c>
+  # Cache: file di /assets punya hash, aman di-cache lama; index.html jangan di-cache
   <FilesMatch "\.(js|css|png|jpg|jpeg|gif|webp|svg|woff2?)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
   <FilesMatch "\.html$">
     Header set Cache-Control "no-cache, no-store, must-revalidate"
   </FilesMatch>
+
+  # ---------- Header keamanan ----------
+  Header always unset X-Powered-By
+  # Browser wajib memakai HTTPS selama 1 tahun
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  # Cegah halaman dibuka di dalam iframe situs lain (clickjacking)
+  Header always set X-Frame-Options "DENY"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  # Kamera (selfie absensi, pindai QR) & lokasi (absensi) hanya untuk situs ini
+  Header always set Permissions-Policy "camera=(self), geolocation=(self), microphone=(), payment=(), usb=(), interest-cohort=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin-allow-popups"
+  # Hanya sumber tepercaya yang boleh memuat skrip, data, dan iframe
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob:; connect-src 'self' https://qjuoleeoqnvtbsgpywhq.supabase.co wss://qjuoleeoqnvtbsgpywhq.supabase.co https://nominatim.openstreetmap.org https://api.ipify.org; frame-src https://docs.google.com https://drive.google.com https://calendar.google.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
 </IfModule>

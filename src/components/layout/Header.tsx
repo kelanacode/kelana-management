@@ -91,13 +91,22 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="h-14 flex items-center justify-between px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-        <div>
-          <h2 className="font-semibold text-gray-900 dark:text-white text-base leading-none">{pageInfo.title}</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 leading-none mt-1">{pageInfo.subtitle}</p>
+      <header className="h-14 flex items-center justify-between gap-2 px-3 sm:px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="md:hidden p-2 -ml-1 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            aria-label="Buka menu"
+          >
+            <Menu size={20} />
+          </button>
+          <div className="min-w-0">
+            <h2 className="font-semibold text-gray-900 dark:text-white text-base leading-none truncate">{pageInfo.title}</h2>
+            <p className="hidden sm:block text-xs text-gray-500 dark:text-gray-400 leading-none mt-1 truncate">{pageInfo.subtitle}</p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
           {/* Global Search Button */}
           <button
             onClick={() => setShowSearchModal(true)}
@@ -105,8 +114,8 @@ export const Header: React.FC = () => {
             title="Cari apapun di Ruang Kelana (Ctrl+K)"
           >
             <Search size={14} className="text-primary-600" />
-            <span className="text-xs">Cari apa saja...</span>
-            <kbd className="text-[10px] bg-white dark:bg-gray-700 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-600 font-mono text-gray-400 dark:text-gray-300">
+            <span className="hidden sm:inline text-xs">Cari apa saja...</span>
+            <kbd className="hidden sm:inline text-[10px] bg-white dark:bg-gray-700 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-600 font-mono text-gray-400 dark:text-gray-300">
               ⌘K
             </kbd>
           </button>

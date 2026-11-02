@@ -68,8 +68,10 @@ export const printLabels = async (assets: Asset[]) => {
         a.code
       )}</div><div class="name">${esc(a.name)}</div><div class="loc">${esc(a.location || '')}</div></div></div>`
     )
-    .join('')}</div><script>window.onload=()=>{setTimeout(()=>window.print(),300)}</script></body></html>`);
+    .join('')}</div></body></html>`);
   win.document.close();
+  // Dipanggil dari jendela utama (skrip inline diblokir oleh Content Security Policy)
+  setTimeout(() => win.print(), 500);
 };
 
 // Pemindai QR: kamera (BarcodeDetector) dengan cadangan input manual / scanner USB

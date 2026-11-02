@@ -38,7 +38,7 @@ export const CommentsSidebar: React.FC<CommentsSidebarProps> = ({
   const resolvedComments = comments.filter(c => c.resolved);
 
   return (
-    <div className="w-80 flex-shrink-0 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col h-full animate-in slide-in-from-right duration-200">
+    <div className="fixed inset-y-0 right-0 z-40 w-full sm:w-80 md:static md:z-auto flex-shrink-0 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col h-full animate-in slide-in-from-right duration-200">
       {/* Header */}
       <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/40">
         <div className="flex items-center gap-2">

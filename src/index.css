@@ -728,3 +728,33 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
   }
 }
 
+
+/* ---------- Tampilan ponsel ---------- */
+@media (max-width: 767px) {
+  /* Cegah zoom otomatis iOS saat mengetik (font input minimal 16px) */
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  /* Tabel lebar bisa digeser, tidak memecah tata letak */
+  main table {
+    min-width: max-content;
+  }
+  /* Kotak dialog tidak melebihi layar */
+  .fixed.inset-0 > div {
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+  }
+}
+
+/* Area aman layar berponi (notch) */
+body {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+html,
+body {
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}

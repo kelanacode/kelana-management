@@ -55,9 +55,9 @@ export const Team: React.FC = () => {
   };
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex flex-col md:flex-row h-full overflow-y-auto md:overflow-hidden">
       {/* Left: Members + Activity */}
-      <div className="w-80 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col overflow-hidden">
+      <div className="w-full md:w-80 flex-shrink-0 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col overflow-hidden">
         {/* Members */}
         <div className="p-5 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
