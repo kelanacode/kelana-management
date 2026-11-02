@@ -31,6 +31,15 @@ import { format, parseISO, isPast } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 
 // ---- Priority Helpers ----
+// Kartu dianggap selesai bila berada di kolom Done / Selesai / Completed,
+// atau kolom paling kanan bila board tidak punya kolom bernama demikian.
+const useIsCardDone = (card: Card) => {
+  const columns = useBoardStore((s) => s.columns);
+  const boardCols = columns.filter((c) => c.boardId === card.boardId).sort((a, b) => a.order - b.order);
+  const doneCol = boardCols.find((c) => /(done|selesai|completed?)/i.test(c.title)) ?? boardCols[boardCols.length - 1];
+  return !!doneCol && doneCol.id === card.columnId;
+};
+
 const priorityConfig: Record<Priority, { label: string; color: string; bg: string }> = {
   high: { label: 'Tinggi', color: 'text-red-600', bg: 'bg-red-100 dark:bg-red-900/30' },
   medium: { label: 'Sedang', color: 'text-amber-600', bg: 'bg-amber-100 dark:bg-amber-900/30' },
@@ -59,7 +68,8 @@ const CardModal: React.FC<{ card: Card; onClose: () => void }> = ({ card, onClos
     setComment('');
   };
 
-  const isOverdue = card.deadline && isPast(parseISO(card.deadline));
+  const isDone = useIsCardDone(card);
+  const isOverdue = !isDone && card.deadline && isPast(parseISO(card.deadline));
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
@@ -230,7 +240,8 @@ const CardModal: React.FC<{ card: Card; onClose: () => void }> = ({ card, onClos
 const KanbanCardItem: React.FC<{ card: Card; onClick: () => void; isDragging?: boolean }> = ({ card, onClick, isDragging }) => {
   const { members } = useAppStore();
   const memberMap = Object.fromEntries(members.map((m) => [m.id, m]));
-  const isOverdue = card.deadline && isPast(parseISO(card.deadline));
+  const isDone = useIsCardDone(card);
+  const isOverdue = !isDone && card.deadline && isPast(parseISO(card.deadline));
   const pc = priorityConfig[card.priority];
 
   return (
