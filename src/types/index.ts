@@ -209,7 +209,9 @@ export type Division =
   | 'HR & GA'
   | 'Produk & Desain'
   | 'Financial'
-  | 'Operasional';
+  | 'Operasional'
+  | 'Marketing'
+  | 'Bisnis';
 
 export interface EventReminder {
   id: string;
