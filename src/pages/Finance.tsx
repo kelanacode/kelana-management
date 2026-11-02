@@ -1,3 +1,4 @@
+import { EasyJournalModal, BANK_CATEGORY, accountLabel, type CoaAccount } from '../components/finance/EasyJournalModal';
 import { DIVISIONS } from '../constants/divisions';
 import React, { useState } from 'react';
 import {
@@ -350,22 +351,6 @@ export const FinancePage: React.FC = () => {
     amount: 0,
   });
 
-  const [jeForm, setJeForm] = useState<{
-    description: string;
-    reference: string;
-    accountDebit: string;
-    accountCredit: string;
-    amount: number;
-    category: 'Kas/Bank' | 'Utang' | 'Piutang' | 'Biaya Operasional' | 'Pendapatan' | 'Aset Tetap';
-  }>({
-    description: '',
-    reference: '',
-    accountDebit: '6090 - Beban Operasional Umum & ATK',
-    accountCredit: '1010 - Kas & Bank BCA Operasional',
-    amount: 0,
-    category: 'Biaya Operasional',
-  });
-
   // Role verification: Admin, Finance, CEO or division Financial
   const user = session?.user;
   const isAuthorized =
@@ -393,6 +378,17 @@ export const FinancePage: React.FC = () => {
   }
 
   // Summary Metrics
+  // Akun untuk formulir Catat Transaksi: kas & bank dari "Rekening Kas & Bank Terhubung"
+  const journalAccounts: CoaAccount[] = [
+    ...finance.bankAccounts.map((b, i) => ({
+      code: `10${String(11 + i).padStart(2, '0')}`,
+      name: `${b.bankName}${b.accountNumber ? ` (${b.accountNumber})` : ''}`,
+      category: BANK_CATEGORY,
+      bankId: b.id,
+      balance: b.balance,
+    })),
+    ...standardAccounts.filter((a) => !['1010', '1020', '1030'].includes(a.code)),
+  ];
   const totalCashBank = finance.bankAccounts.reduce((acc, b) => acc + b.balance, 0);
   const totalReceivables = finance.salesOrders
     .filter((s) => s.paymentStatus !== 'Paid (Mekari/Bank)')
@@ -476,26 +472,6 @@ export const FinancePage: React.FC = () => {
       description: '',
       category: 'Petty Cash',
       amount: 0,
-    });
-  };
-
-  // Manual JE handler
-  const handleCreateJE = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!jeForm.description || jeForm.amount <= 0) return;
-    finance.addJournalEntry({
-      ...jeForm,
-      status: 'Posted',
-      createdBy: session?.user.name || 'Finance User',
-    });
-    setShowJEModal(false);
-    setJeForm({
-      description: '',
-      reference: '',
-      accountDebit: '6090 - Beban Operasional Umum',
-      accountCredit: '1010 - Bank BCA Operasional',
-      amount: 0,
-      category: 'Biaya Operasional',
     });
   };
 
@@ -907,7 +883,7 @@ export const FinancePage: React.FC = () => {
                   onClick={() => setShowJEModal(true)}
                   className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
                 >
-                  <Plus size={14} /> + Jurnal Manual
+                  <Plus size={14} /> Catat Transaksi
                 </button>
               </div>
 
@@ -3839,104 +3815,23 @@ export const FinancePage: React.FC = () => {
         </div>
       )}
 
-      {/* Modal Jurnal Umum Manual */}
+      {/* Modal Catat Transaksi (jurnal) — ramah untuk orang awam akuntansi */}
       {showJEModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full p-6 shadow-xl border border-gray-100 dark:border-gray-700 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
-              <h3 className="font-bold text-base text-gray-900 dark:text-white flex items-center gap-2">
-                <FileText size={18} className="text-emerald-600" />
-                Input Jurnal Umum Manual
-              </h3>
-              <button onClick={() => setShowJEModal(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={18} />
-              </button>
-            </div>
-            <form onSubmit={handleCreateJE} className="space-y-3 text-xs">
-              <div>
-                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Deskripsi Transaksi</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Misal: Pembayaran sewa kantor bulan November"
-                  value={jeForm.description}
-                  onChange={(e) => setJeForm({ ...jeForm, description: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">No. Referensi</label>
-                  <input
-                    type="text"
-                    placeholder="INV-001 / BKK-001"
-                    value={jeForm.reference}
-                    onChange={(e) => setJeForm({ ...jeForm, reference: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Kategori</label>
-                  <select
-                    value={jeForm.category}
-                    onChange={(e) => setJeForm({ ...jeForm, category: e.target.value as typeof jeForm.category })}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  >
-                    {['Kas/Bank', 'Utang', 'Piutang', 'Biaya Operasional', 'Pendapatan', 'Aset Tetap'].map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Akun Debit</label>
-                <input
-                  type="text"
-                  required
-                  value={jeForm.accountDebit}
-                  onChange={(e) => setJeForm({ ...jeForm, accountDebit: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Akun Kredit</label>
-                <input
-                  type="text"
-                  required
-                  value={jeForm.accountCredit}
-                  onChange={(e) => setJeForm({ ...jeForm, accountCredit: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-600 dark:text-gray-300 font-medium mb-1">Nominal (Rp)</label>
-                <input
-                  type="number"
-                  min="1"
-                  required
-                  value={jeForm.amount || ''}
-                  onChange={(e) => setJeForm({ ...jeForm, amount: Number(e.target.value) })}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-semibold"
-                />
-              </div>
-              <div className="pt-2 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowJEModal(false)}
-                  className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center gap-1.5"
-                >
-                  <Check size={13} /> Posting Jurnal
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <EasyJournalModal
+          accounts={journalAccounts}
+          onClose={() => setShowJEModal(false)}
+          onSubmit={(input) => {
+            finance.addJournalEntry({ ...input, status: 'Posted', createdBy: session?.user.name || 'Finance User' });
+            // Saldo rekening ikut berubah: debit = uang masuk, kredit = uang keluar
+            journalAccounts.forEach((a) => {
+              if (!a.bankId) return;
+              const change = (accountLabel(a) === input.accountDebit ? input.amount : 0) - (accountLabel(a) === input.accountCredit ? input.amount : 0);
+              const bank = finance.bankAccounts.find((b) => b.id === a.bankId);
+              if (change && bank) finance.updateBankAccount(bank.id, { balance: bank.balance + change });
+            });
+            setShowJEModal(false);
+          }}
+        />
       )}
 
       {/* Modal Sales Order Baru */}
