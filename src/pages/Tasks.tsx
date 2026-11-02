@@ -109,7 +109,8 @@ export const TasksPage: React.FC = () => {
       return myPendingTasks;
     }
     if (activeTab === 'all_tasks') {
-      return tasks;
+      // Taks yang sudah selesai pindah ke tab Taks Selesai
+      return tasks.filter((t) => t.status !== 'Completed');
     }
     return accessibleTasks;
   };
@@ -453,7 +454,7 @@ export const TasksPage: React.FC = () => {
                   : 'text-gray-600 hover:text-gray-900 dark:text-gray-400'
               }`}
             >
-              Semua Taks ({tasks.length})
+              Semua Taks ({tasks.filter((t) => t.status !== 'Completed').length})
             </button>
             <button
               onClick={() => setActiveTab('review')}
