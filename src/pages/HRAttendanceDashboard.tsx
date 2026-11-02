@@ -1,3 +1,4 @@
+import { DIVISIONS } from '../constants/divisions';
 import React, { useState } from 'react';
 import {
   Users, CheckCircle2, Clock, AlertTriangle, FileSpreadsheet, Download,
@@ -210,11 +211,9 @@ export const HRAttendanceDashboard: React.FC = () => {
               className="input text-xs py-1.5 w-auto"
             >
               <option value="Semua Divisi">Semua Divisi</option>
-              <option value="Teknologi & IT">Teknologi & IT</option>
-              <option value="Produk & Desain">Produk & Desain</option>
-              <option value="Pemasaran & Bisnis">Pemasaran & Bisnis</option>
-              <option value="Operasional & HR">Operasional & HR</option>
-              <option value="Keuangan & Legal">Keuangan & Legal</option>
+              {DIVISIONS.map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
             </select>
 
             <select

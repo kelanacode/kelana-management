@@ -1,3 +1,4 @@
+import { DIVISIONS } from '../constants/divisions';
 import React, { useState } from 'react';
 import {
   DollarSign,
@@ -82,15 +83,7 @@ export const FinancePage: React.FC = () => {
   const [activeWorkflow, setActiveWorkflow] = useState<'A' | 'B' | 'C'>('A');
 
   // Daftar Pilihan Divisi & Periode Gaji Resmi
-  const DIVISION_OPTIONS = [
-    'All Role',
-    'Teknologi & IT',
-    'Produk & Desain',
-    'Pemasaran & Bisnis',
-    'Operasional & HR',
-    'Financial',
-    'Keuangan & Legal',
-  ];
+  const DIVISION_OPTIONS: string[] = [...DIVISIONS];
 
   const PERIOD_OPTIONS = [
     'Januari 2026',

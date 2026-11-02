@@ -206,11 +206,10 @@ export interface CalendarEvent {
 export type Division =
   | 'Semua Divisi'
   | 'Teknologi & IT'
+  | 'HR & GA'
   | 'Produk & Desain'
-  | 'Pemasaran & Bisnis'
-  | 'Marketing'
-  | 'Operasional & HR'
-  | 'Keuangan & Legal';
+  | 'Financial'
+  | 'Operasional';
 
 export interface EventReminder {
   id: string;

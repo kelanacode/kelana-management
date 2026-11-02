@@ -195,8 +195,8 @@ export const DatabasePage: React.FC = () => {
 
   // Role & Division Check:
   // - CEO has access to everything
-  // - Finance & Budgeting: ONLY accessible by CEO, Admin, or division Financial / Keuangan & Legal
-  // - HR & Karyawan: ONLY accessible by CEO, Admin, HR, or division Operasional & HR
+  // - Finance & Budgeting: ONLY accessible by CEO, Admin, or division Financial
+  // - HR & Karyawan: ONLY accessible by CEO, Admin, HR, or division HR & GA
   // - Other tables (CRM, Content, Inventory, etc.): Accessible by anyone!
   const isCEO =
     currentRole === 'CEO' ||

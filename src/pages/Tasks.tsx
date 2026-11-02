@@ -1,3 +1,4 @@
+import { DIVISIONS } from '../constants/divisions';
 import React, { useState } from 'react';
 import {
   CheckSquare, Plus, Filter, Search, Calendar, Clock,
@@ -616,11 +617,9 @@ export const TasksPage: React.FC = () => {
                     onChange={(e) => setTargetDivision(e.target.value)}
                     className="input text-xs"
                   >
-                    <option value="Teknologi & IT">Teknologi & IT</option>
-                    <option value="Produk & Desain">Produk & Desain</option>
-                    <option value="Pemasaran & Bisnis">Pemasaran & Bisnis</option>
-                    <option value="Operasional & HR">Operasional & HR</option>
-                    <option value="Keuangan & Legal">Keuangan & Legal</option>
+                    {DIVISIONS.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
                   </select>
                 </div>
               )}

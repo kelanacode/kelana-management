@@ -1,3 +1,4 @@
+import { DIVISIONS } from '../../constants/divisions';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   MessageSquare, X, Send, Hash, Lock, Megaphone, Search, Paperclip, Pin, PinOff,
@@ -21,7 +22,7 @@ import {
 import type { UserAccount } from '../../types/auth';
 
 const ROLE_OPTIONS = ['Admin', 'CEO', 'HR', 'Manager', 'Finance', 'Marketing', 'Staff'];
-const DIVISION_OPTIONS = ['Teknologi & IT', 'Produk & Desain', 'Pemasaran & Bisnis', 'Operasional & HR', 'Financial', 'Keuangan & Legal'];
+const DIVISION_OPTIONS: string[] = [...DIVISIONS];
 
 const presenceColor = (p?: PresenceStatus) =>
   p === 'online' ? 'bg-emerald-500' : p === 'away' ? 'bg-amber-400' : 'bg-gray-300 dark:bg-gray-600';

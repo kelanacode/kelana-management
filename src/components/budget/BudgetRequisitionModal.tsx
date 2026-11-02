@@ -51,8 +51,7 @@ export const BudgetRequisitionModal: React.FC<{
     currentRole === 'HR' ||
     currentRole === 'Admin' ||
     currentRole === 'CEO' ||
-    userDivision.toLowerCase().includes('hr') ||
-    userDivision.toLowerCase().includes('operasional');
+    userDivision.toLowerCase().includes('hr');
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<'create' | 'list' | 'approvals'>('list');

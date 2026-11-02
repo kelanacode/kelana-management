@@ -1,3 +1,4 @@
+import { DIVISIONS } from '../../constants/divisions';
 import React, { useState, useEffect } from 'react';
 import { Note, NoteShareScope } from '../../types';
 import { useAuthStore } from '../../stores/authStore';
@@ -26,14 +27,7 @@ interface NoteShareModalProps {
   ) => void;
 }
 
-const AVAILABLE_DIVISIONS = [
-  'Teknologi & IT',
-  'Operasional & HR',
-  'Pemasaran & Bisnis',
-  'Keuangan & Akuntansi',
-  'Kreatif & Desain',
-  'Legal & Kepatuhan'
-];
+const AVAILABLE_DIVISIONS: string[] = [...DIVISIONS];
 
 export const NoteShareModal: React.FC<NoteShareModalProps> = ({
   isOpen,

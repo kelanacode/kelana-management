@@ -55,7 +55,7 @@ export interface CompanyTask {
   
   // Target Assignment
   targetType: TaskTargetType;
-  targetDivision?: string; // e.g. "Teknologi & IT", "Pemasaran & Bisnis", etc.
+  targetDivision?: string; // e.g. "Teknologi & IT", "HR & GA", etc.
   assignedToUserIds: string[]; // User IDs targeted
   assignedToNames: string[];
   

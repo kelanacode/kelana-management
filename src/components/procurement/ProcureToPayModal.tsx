@@ -52,8 +52,7 @@ export const ProcureToPayModal: React.FC<{
     currentRole === 'HR' ||
     currentRole === 'Admin' ||
     currentRole === 'CEO' ||
-    userDivision.toLowerCase().includes('hr') ||
-    userDivision.toLowerCase().includes('operasional');
+    userDivision.toLowerCase().includes('hr');
 
   // Tabs for 4 Modules:
   // 1: User / All Departments (PR Requisition)

@@ -1,3 +1,4 @@
+import { DIVISIONS } from '../../constants/divisions';
 import React, { useState } from 'react';
 import {
   Users, UserPlus, Shield, Mail, KeyRound, CheckCircle2,
@@ -344,11 +345,12 @@ export const AccountManagementModal: React.FC<{ isOpen: boolean; onClose: () => 
                         className="input text-xs"
                       >
                         <option value="All Role">All Role (Executive / CEO)</option>
-                        <option value="Marketing">Marketing / Pemasaran & Bisnis</option>
-                        <option value="Teknologi & IT">Teknologi & IT</option>
-                        <option value="Produk & Desain">Produk & Desain</option>
-                        <option value="Operasional & HR">Operasional & HR</option>
-                        <option value="Keuangan & Legal">Keuangan & Legal</option>
+                        {DIVISIONS.map((d) => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                        {division && division !== 'All Role' && !(DIVISIONS as readonly string[]).includes(division) && (
+                          <option value={division}>{division} (lama)</option>
+                        )}
                       </select>
                     </div>
 
