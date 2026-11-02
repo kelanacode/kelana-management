@@ -9,7 +9,7 @@ import { useDatabaseStore } from '../stores/databaseStore';
 import { DatabaseField, FieldType, SelectOption, TableCategory, DocumentCategory } from '../types';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
-import { DocumentDetailView } from '../components/database/DocumentDetailView';
+import { DocumentDetailView, isGDocsUrl } from '../components/database/DocumentDetailView';
 import { GoogleIntegrationModal } from '../components/database/GoogleIntegrationModal';
 import { DriveSidebar, DriveFoldersView } from '../components/database/DriveFolders';
 import { useAuthStore } from '../stores/authStore';
@@ -465,23 +465,24 @@ export const DatabasePage: React.FC = () => {
                     type="url"
                     value={newDocGDocsUrl}
                     onChange={(e) => setNewDocGDocsUrl(e.target.value)}
-                    placeholder="Tempel link Google Docs Anda..."
+                    placeholder="Link Google Docs (wajib)"
                     className="input text-xs py-1.5"
                   />
                   <p className="text-[10px] text-gray-400">
-                    💡 Opsional: Masukkan URL Google Docs yang sudah Anda miliki agar terhubung langsung.
+                    💡 Wajib: dokumen hanya ditampilkan dari link Google Docs (https://docs.google.com/...).
                   </p>
                   <div className="flex gap-1.5 pt-1">
                     <button
                       onClick={() => {
-                        if (newDocTitle.trim()) {
-                          addDocument(newDocTitle.trim(), newDocCategory, newDocGDocsUrl.trim() || undefined);
+                        if (newDocTitle.trim() && isGDocsUrl(newDocGDocsUrl)) {
+                          addDocument(newDocTitle.trim(), newDocCategory, newDocGDocsUrl.trim());
                           setNewDocTitle('');
                           setNewDocGDocsUrl('');
                           setAddingDoc(false);
                         }
                       }}
-                      className="btn-primary text-xs py-1 px-3 flex-1"
+                      disabled={!newDocTitle.trim() || !isGDocsUrl(newDocGDocsUrl)}
+                      className="btn-primary text-xs py-1 px-3 flex-1 disabled:opacity-40"
                     >
                       Buat Dokumen
                     </button>
