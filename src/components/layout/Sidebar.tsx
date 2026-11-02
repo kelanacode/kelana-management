@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import {
   LayoutDashboard,
   FileText,
@@ -260,17 +261,24 @@ export const Sidebar: React.FC = () => {
         )}
       </div>
 
-      {/* Profile Personalization Modal (Untuk semua akun & pegawai) */}
-      <ProfilePersonalizationModal
-        isOpen={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
-      />
+      {/* Modal dirender di document.body: sidebar memakai translate (menu geser ponsel),
+          sehingga elemen fixed di dalamnya akan terkurung selebar sidebar. */}
+      {createPortal(
+        <>
+          {/* Profile Personalization Modal (Untuk semua akun & pegawai) */}
+          <ProfilePersonalizationModal
+            isOpen={showProfileModal}
+            onClose={() => setShowProfileModal(false)}
+          />
 
-      {/* Account Management Modal */}
-      <AccountManagementModal
-        isOpen={showAccountModal}
-        onClose={() => setShowAccountModal(false)}
-      />
+          {/* Account Management Modal */}
+          <AccountManagementModal
+            isOpen={showAccountModal}
+            onClose={() => setShowAccountModal(false)}
+          />
+        </>,
+        document.body
+      )}
     </aside>
   );
 };
