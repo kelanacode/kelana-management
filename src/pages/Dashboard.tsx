@@ -4,7 +4,7 @@ import {
   FileText, Kanban, Database,
   Plus, TrendingUp, Clock, AlertCircle,
   ArrowRight, Users, BellRing, MapPin, Building2,
-  PieChart, DollarSign, ShieldAlert
+  PieChart, DollarSign, ShieldAlert, CheckCircle2
 } from 'lucide-react';
 import {
   useNotesStore,
@@ -42,7 +42,14 @@ export const Dashboard: React.FC = () => {
       .filter((id): id is string => !!id)
   );
   const { tables } = useDatabaseStore();
-  const { reminders } = useReminderStore();
+  const { reminders, updateReminder } = useReminderStore();
+
+  // Agenda di Dashboard: hanya hari ini & mendatang (WIB) yang belum selesai.
+  // Agenda yang tidak diselesaikan hilang dari Dashboard keesokan harinya.
+  const todayWIB = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
+  const dashboardAgendas = reminders
+    .filter((r) => !r.completed && r.date >= todayWIB)
+    .sort((a, b) => (a.date + (a.startTime || '')).localeCompare(b.date + (b.startTime || '')));
   const { settings, members, activities } = useAppStore();
   const { departmentBudgets } = useFinanceStore();
   const { requisitions } = useBudgetRequisitionStore();
@@ -191,7 +198,12 @@ export const Dashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {reminders.slice(0, 3).map((rem) => (
+          {dashboardAgendas.length === 0 && (
+            <div className="md:col-span-3 p-4 text-center text-xs text-gray-500 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+              Tidak ada agenda aktif hari ini atau mendatang.
+            </div>
+          )}
+          {dashboardAgendas.slice(0, 3).map((rem) => (
             <div
               key={rem.id}
               onClick={() => navigate('/calendar')}
@@ -216,6 +228,15 @@ export const Dashboard: React.FC = () => {
                 <MapPin size={12} className="text-red-500 flex-shrink-0" />
                 <span className="truncate">{rem.location || 'Lokasi belum ditentukan'}</span>
               </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateReminder(rem.id, { completed: true, completedAt: new Date().toISOString() });
+                }}
+                className="mt-3 w-full px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer"
+              >
+                <CheckCircle2 size={12} /> Tandai Selesai
+              </button>
             </div>
           ))}
         </div>

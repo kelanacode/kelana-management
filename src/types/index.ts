@@ -228,6 +228,8 @@ export interface EventReminder {
   attendeeIds?: string[]; // 7. Peserta wajib hadir (id karyawan)
   dismissed?: boolean;
   snoozedUntil?: string;
+  completed?: boolean; // Agenda sudah dilakukan/diselesaikan
+  completedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
