@@ -35,7 +35,7 @@ export const BudgetRequisitionModal: React.FC<{
 
   const isCEO =
     currentRole === 'CEO' ||
-    userDivision.includes('all role') ||
+    userDivision.toLowerCase().includes('all role') ||
     currentPos.includes('ceo') ||
     currentPos.includes('direktur') ||
     currentPos.includes('chief executive');
@@ -89,6 +89,13 @@ export const BudgetRequisitionModal: React.FC<{
       budgetDivision.toLowerCase().includes(b.department.toLowerCase())
   );
   const remainingBudget = deptBudget ? deptBudget.remainingBudget : 100000000;
+
+  // Pengajuan yang masih menunggu keputusan CEO
+  const awaitingCEO = (req: BudgetRequisition) =>
+    req.status !== 'Ditolak (Rejected)' &&
+    req.status !== 'Disetujui CEO (Approved)' &&
+    req.status !== 'Realisasi & Pembayaran (Disbursed)' &&
+    (req.ceoApproval.status === 'Pending' || req.status === 'Menunggu Persetujuan CEO');
 
   const formatIDR = (val: number) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
@@ -464,13 +471,33 @@ export const BudgetRequisitionModal: React.FC<{
                       </div>
                     </div>
 
+                    {isCEO && awaitingCEO(req) && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => reviewByCEO(req.id, currentUser?.name || 'CEO', true, 'Persetujuan Final CEO Disahkan')}
+                          className="flex-1 px-3 py-1.5 rounded-lg bg-purple-700 text-white font-black text-[11px] hover:bg-purple-800 shadow-sm cursor-pointer"
+                        >
+                          ✓ Setujui (CEO)
+                        </button>
+                        <button
+                          onClick={() => reviewByCEO(req.id, currentUser?.name || 'CEO', false, 'Tidak disetujui CEO')}
+                          className="px-3 py-1.5 rounded-lg bg-rose-100 text-rose-800 font-bold text-[11px] hover:bg-rose-200 cursor-pointer"
+                        >
+                          ✕ Tolak
+                        </button>
+                      </div>
+                    )}
+
                     <div className="pt-2 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-[11px]">
                       <span className="text-gray-400">
                         Oleh: {req.requesterName} • {format(parseISO(req.createdAt), 'dd MMM yyyy')}
                       </span>
 
                       <button
-                        onClick={() => setSelectedReq(req)}
+                        onClick={() => {
+                          setSelectedReq(req);
+                          if (isCEO || isFinance || isHR) setActiveTab('approvals');
+                        }}
                         className="text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1 cursor-pointer"
                       >
                         <Eye size={12} /> Rincian &amp; Review
@@ -574,7 +601,7 @@ export const BudgetRequisitionModal: React.FC<{
                         )}
 
                         {/* MANDATORY CEO APPROVAL */}
-                        {isCEO && req.ceoApproval.status === 'Pending' && (
+                        {isCEO && awaitingCEO(req) && (
                           <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-950/50 p-1.5 rounded-xl border border-purple-200 dark:border-purple-800">
                             <span className="text-[10px] font-bold text-purple-900 dark:text-purple-200 flex items-center gap-1">
                               <ShieldCheck size={12} /> Keputusan CEO:
