@@ -75,7 +75,12 @@ export const BudgetRequisitionModal: React.FC<{
 
   if (!isOpen) return null;
 
-  const budgetDivision = isCEO && sourceDivision ? sourceDivision : userDivision;
+  // CEO & Admin memilih sumber anggaran divisi (bukan "All Role")
+  const canChooseSource =
+    isCEO || currentRole === 'Admin' || userDivision.toLowerCase().includes('all role');
+  const budgetDivision = canChooseSource
+    ? sourceDivision || departmentBudgets[0]?.department || userDivision
+    : userDivision;
 
   // Sisa anggaran divisi saat ini
   const deptBudget = departmentBudgets.find(
@@ -236,18 +241,17 @@ export const BudgetRequisitionModal: React.FC<{
                 </div>
               )}
 
-              {isCEO && (
+              {canChooseSource && (
                 <div>
                   <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">
                     Sumber Anggaran Divisi *
                   </label>
                   <select
                     required
-                    value={sourceDivision}
+                    value={budgetDivision}
                     onChange={(e) => setSourceDivision(e.target.value)}
                     className="input text-xs"
                   >
-                    <option value="" disabled>Pilih divisi yang anggarannya digunakan</option>
                     {departmentBudgets.map((b) => (
                       <option key={b.id} value={b.department}>
                         {b.department} — sisa {formatIDR(b.remainingBudget)}
