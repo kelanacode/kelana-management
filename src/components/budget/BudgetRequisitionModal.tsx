@@ -65,6 +65,8 @@ export const BudgetRequisitionModal: React.FC<{
   const [vendorName, setVendorName] = useState('');
   const [attachmentUrl, setAttachmentUrl] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  // CEO dapat memilih anggaran divisi mana yang dipakai
+  const [sourceDivision, setSourceDivision] = useState('');
 
   // Selected Requisition for View/Action
   const [selectedReq, setSelectedReq] = useState<BudgetRequisition | null>(null);
@@ -73,11 +75,13 @@ export const BudgetRequisitionModal: React.FC<{
 
   if (!isOpen) return null;
 
+  const budgetDivision = isCEO && sourceDivision ? sourceDivision : userDivision;
+
   // Sisa anggaran divisi saat ini
   const deptBudget = departmentBudgets.find(
     (b) =>
-      b.department.toLowerCase().includes(userDivision.toLowerCase()) ||
-      userDivision.toLowerCase().includes(b.department.toLowerCase())
+      b.department.toLowerCase().includes(budgetDivision.toLowerCase()) ||
+      budgetDivision.toLowerCase().includes(b.department.toLowerCase())
   );
   const remainingBudget = deptBudget ? deptBudget.remainingBudget : 100000000;
 
@@ -91,7 +95,7 @@ export const BudgetRequisitionModal: React.FC<{
     const res = submitRequisition({
       title,
       type,
-      department: userDivision,
+      department: budgetDivision,
       requesterId: currentUser?.id || 'user',
       requesterName: currentUser?.name || 'Karyawan',
       requesterPosition: currentUser?.position || 'Staff',
@@ -160,7 +164,7 @@ export const BudgetRequisitionModal: React.FC<{
                 </span>
               </div>
               <p className="text-xs text-emerald-100">
-                Divisi: <strong>{userDivision}</strong> • Sisa Pagu Tersedia: <strong>{formatIDR(remainingBudget)}</strong>
+                Divisi: <strong>{budgetDivision}</strong> • Sisa Pagu Tersedia: <strong>{formatIDR(remainingBudget)}</strong>
               </p>
             </div>
           </div>
@@ -220,7 +224,7 @@ export const BudgetRequisitionModal: React.FC<{
                 <div className="leading-relaxed text-emerald-900 dark:text-emerald-200">
                   <p className="font-bold">Fitur Budget Encumbrance (Penahanan Anggaran) Aktif</p>
                   <p className="text-[11px] text-emerald-700 dark:text-emerald-300 mt-0.5">
-                    Sistem secara otomatis mengunci dana pengajuan dari pagu divisi <strong>{userDivision}</strong> agar tidak digunakan untuk kebutuhan lain sebelum disetujui resmi oleh <strong>CEO</strong>.
+                    Sistem secara otomatis mengunci dana pengajuan dari pagu divisi <strong>{budgetDivision}</strong> agar tidak digunakan untuk kebutuhan lain sebelum disetujui resmi oleh <strong>CEO</strong>.
                   </p>
                 </div>
               </div>
@@ -229,6 +233,27 @@ export const BudgetRequisitionModal: React.FC<{
                 <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 rounded-xl flex items-center gap-2">
                   <AlertTriangle size={15} />
                   <span>{errorMsg}</span>
+                </div>
+              )}
+
+              {isCEO && (
+                <div>
+                  <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">
+                    Sumber Anggaran Divisi *
+                  </label>
+                  <select
+                    required
+                    value={sourceDivision}
+                    onChange={(e) => setSourceDivision(e.target.value)}
+                    className="input text-xs"
+                  >
+                    <option value="" disabled>Pilih divisi yang anggarannya digunakan</option>
+                    {departmentBudgets.map((b) => (
+                      <option key={b.id} value={b.department}>
+                        {b.department} — sisa {formatIDR(b.remainingBudget)}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
 
