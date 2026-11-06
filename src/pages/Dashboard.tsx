@@ -273,7 +273,21 @@ export const Dashboard: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
-            {visibleBudgets.map((b) => (
+            {visibleBudgets.map((b) => {
+              // Pengajuan yang sudah disetujui CEO tapi belum dicairkan ikut mengurangi pagu
+              const approved = requisitions
+                .filter(
+                  (r) =>
+                    r.status === 'Disetujui CEO (Approved)' &&
+                    (b.department.toLowerCase().includes(r.department.toLowerCase()) ||
+                      r.department.toLowerCase().includes(b.department.toLowerCase()))
+                )
+                .reduce((sum, r) => sum + r.estimatedAmount, 0);
+              const used = b.spentBudget + approved;
+              const pct = b.allocatedBudget > 0 ? Math.round((used / b.allocatedBudget) * 100) : 0;
+              const spentPct = b.allocatedBudget > 0 ? (b.spentBudget / b.allocatedBudget) * 100 : 0;
+              const approvedPct = b.allocatedBudget > 0 ? (approved / b.allocatedBudget) * 100 : 0;
+              return (
               <div
                 key={b.id}
                 className="p-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 space-y-2.5"
@@ -284,21 +298,23 @@ export const Dashboard: React.FC = () => {
                   </span>
                   <span
                     className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                      b.status === 'Aman'
+                      pct <= 80
                         ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
                         : 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
                     }`}
                   >
-                    {b.variancePercentage}%
+                    {pct}%
                   </span>
                 </div>
 
-                <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden flex">
                   <div
-                    className={`h-full ${
-                      b.variancePercentage > 80 ? 'bg-amber-500' : 'bg-emerald-500'
-                    }`}
-                    style={{ width: `${Math.min(100, b.variancePercentage)}%` }}
+                    className={`h-full ${pct > 80 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                    style={{ width: `${Math.min(100, spentPct)}%` }}
+                  />
+                  <div
+                    className="h-full bg-purple-400"
+                    style={{ width: `${Math.min(100 - Math.min(100, spentPct), approvedPct)}%` }}
                   />
                 </div>
 
@@ -307,9 +323,15 @@ export const Dashboard: React.FC = () => {
                     <span>Terealisasi:</span>
                     <strong className="text-gray-800 dark:text-gray-200">{formatIDR(b.spentBudget)}</strong>
                   </div>
+                  {approved > 0 && (
+                    <div className="flex justify-between">
+                      <span>Disetujui CEO:</span>
+                      <strong className="text-purple-600">{formatIDR(approved)}</strong>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span>Sisa Pagu:</span>
-                    <strong className="text-emerald-600 font-semibold">{formatIDR(b.remainingBudget)}</strong>
+                    <strong className="text-emerald-600 font-semibold">{formatIDR(b.allocatedBudget - used)}</strong>
                   </div>
                   <div className="flex justify-between border-t border-gray-100 dark:border-gray-700 pt-1">
                     <span>Pagu Anggaran:</span>
@@ -317,7 +339,8 @@ export const Dashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
