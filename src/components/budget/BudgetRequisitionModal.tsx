@@ -273,7 +273,7 @@ export const BudgetRequisitionModal: React.FC<{
                   <input
                     type="number"
                     required
-                    min={100000}
+                    min={1000}
                     value={estimatedAmount}
                     onChange={(e) => setEstimatedAmount(Number(e.target.value))}
                     className="input text-xs font-bold text-emerald-600"
