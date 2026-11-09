@@ -31,7 +31,7 @@ interface BudgetRequisitionStore {
   // Approval steps: HR, Finance, and Mandatory CEO
   reviewByHR: (id: string, reviewerName: string, approved: boolean, notes?: string) => void;
   reviewByFinance: (id: string, reviewerName: string, approved: boolean, notes?: string) => void;
-  reviewByCEO: (id: string, ceoName: string, approved: boolean, notes?: string) => void;
+  reviewByCEO: (id: string, ceoName: string, approved: boolean, notes?: string, bankId?: string) => void;
 
   // Realisasi & Pencairan (Disbursement)
   disburseRequisition: (id: string, disbursByName: string, bankId: string, proofUrl?: string) => void;
@@ -167,7 +167,7 @@ export const useBudgetRequisitionStore = create<BudgetRequisitionStore>()(
       },
 
       // MANDATORY APPROVAL BY CEO
-      reviewByCEO: (id, ceoName, approved, notes) => {
+      reviewByCEO: (id, ceoName, approved, notes, bankId) => {
         set((state) => ({
           requisitions: state.requisitions.map((req) => {
             if (req.id !== id) return req;
@@ -188,6 +188,18 @@ export const useBudgetRequisitionStore = create<BudgetRequisitionStore>()(
             };
           }),
         }));
+
+        // Setelah disetujui CEO: langsung dibukukan ke Jurnal Umum & saldo Kas/Bank dipotong
+        if (approved) {
+          const req = get().requisitions.find((r) => r.id === id);
+          const banks = useFinanceStore.getState().bankAccounts;
+          if (req && banks.length > 0) {
+            const chosen =
+              banks.find((b) => b.id === bankId) ||
+              [...banks].sort((a, b) => b.balance - a.balance)[0];
+            get().disburseRequisition(id, ceoName, chosen.id);
+          }
+        }
       },
 
       // Realisasi Pembayaran & Pencatatan Transaksi ke Buku Besar
@@ -210,15 +222,16 @@ export const useBudgetRequisitionStore = create<BudgetRequisitionStore>()(
           });
         }
 
-        // Potong saldo rekening bank
-        finance.adjustBankBalance(bankId, -req.estimatedAmount, `Realisasi Anggaran: ${req.title} (${req.requestNumber})`);
-
-        // Tambahkan Jurnal Pengeluaran
+        // Potong saldo rekening bank & catat satu jurnal di Buku Besar
+        const bank = finance.bankAccounts.find((b) => b.id === bankId);
+        if (bank) {
+          finance.updateBankAccount(bank.id, { balance: bank.balance - req.estimatedAmount });
+        }
         finance.addJournalEntry({
-          description: `Beban Operasional Anggaran: ${req.title} (${req.department})`,
+          description: `Realisasi Anggaran ${req.department}: ${req.title}`,
           reference: req.requestNumber,
-          accountDebit: `Beban Divisi ${req.department}`,
-          accountCredit: 'Kas / Bank Operasional',
+          accountDebit: `6090 - Beban Divisi ${req.department}`,
+          accountCredit: bank ? `1010 - ${bank.bankName} (${bank.accountNumber})` : '1010 - Kas / Bank Operasional',
           amount: req.estimatedAmount,
           category: 'Biaya Operasional',
           status: 'Posted',

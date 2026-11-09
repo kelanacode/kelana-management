@@ -474,7 +474,7 @@ export const BudgetRequisitionModal: React.FC<{
                     {isCEO && awaitingCEO(req) && (
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => reviewByCEO(req.id, currentUser?.name || 'CEO', true, 'Persetujuan Final CEO Disahkan')}
+                          onClick={() => reviewByCEO(req.id, currentUser?.name || 'CEO', true, 'Persetujuan Final CEO Disahkan', selectedBankId)}
                           className="flex-1 px-3 py-1.5 rounded-lg bg-purple-700 text-white font-black text-[11px] hover:bg-purple-800 shadow-sm cursor-pointer"
                         >
                           ✓ Setujui (CEO)
@@ -607,7 +607,7 @@ export const BudgetRequisitionModal: React.FC<{
                               <ShieldCheck size={12} /> Keputusan CEO:
                             </span>
                             <button
-                              onClick={() => reviewByCEO(req.id, currentUser?.name || 'CEO', true, 'Persetujuan Final CEO Disahkan')}
+                              onClick={() => reviewByCEO(req.id, currentUser?.name || 'CEO', true, 'Persetujuan Final CEO Disahkan', selectedBankId)}
                               className="px-3 py-1.5 rounded-lg bg-purple-700 text-white font-black text-[11px] hover:bg-purple-800 shadow-sm cursor-pointer"
                             >
                               ✓ Sahkan &amp; Setujui (CEO)
