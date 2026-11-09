@@ -36,6 +36,8 @@ interface BudgetRequisitionStore {
   // Realisasi & Pencairan (Disbursement)
   disburseRequisition: (id: string, disbursByName: string, bankId: string, proofUrl?: string) => void;
   cancelRequisition: (id: string, reason?: string) => void;
+  // Bukukan pengajuan yang sudah disetujui CEO tapi belum masuk Jurnal Umum
+  postApprovedToLedger: () => number;
 }
 
 const INITIAL_REQUISITIONS: BudgetRequisition[] = [];
@@ -253,6 +255,20 @@ export const useBudgetRequisitionStore = create<BudgetRequisitionStore>()(
               : r
           ),
         }));
+      },
+
+      postApprovedToLedger: () => {
+        const finance = useFinanceStore.getState();
+        if (finance.bankAccounts.length === 0) return 0;
+        const posted = new Set(finance.journalEntries.map((j) => j.reference));
+        const pending = get().requisitions.filter(
+          (r) => r.status === 'Disetujui CEO (Approved)' && !posted.has(r.requestNumber)
+        );
+        for (const r of pending) {
+          const bank = [...useFinanceStore.getState().bankAccounts].sort((a, b) => b.balance - a.balance)[0];
+          get().disburseRequisition(r.id, r.ceoApproval.name || 'CEO', bank.id);
+        }
+        return pending.length;
       },
 
       cancelRequisition: (id, reason) => {

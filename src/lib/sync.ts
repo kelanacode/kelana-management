@@ -260,6 +260,9 @@ export async function startSync() {
     setFromRemote(ts.store, { [ts.spec.key]: ordered(ts.spec.table, merged) });
   });
 
+  // Pengajuan anggaran yang sudah disetujui CEO tapi belum dibukukan → buat jurnalnya
+  useBudgetRequisitionStore.getState().postApprovedToLedger();
+
   // 3. Terima perubahan dari pengguna lain (WebSocket memakai token login agar lolos RLS)
   const { data: auth } = await supabase.auth.getSession();
   if (auth.session) await supabase.realtime.setAuth(auth.session.access_token);
